@@ -1,13 +1,10 @@
 // lib/main.dart
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:spp_connection_plugin/spp_connection_plugin.dart';
 
 void main() {
-  // optional logging
-  FlutterBluePlus.setLogLevel(LogLevel.info);
   runApp(const MyApp());
 }
 
@@ -15,282 +12,249 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'rehabilitation_hand',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const BluetoothPage(),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: SerialMonitorPage(),
     );
   }
 }
 
-class BluetoothPage extends StatefulWidget {
-  const BluetoothPage({super.key});
+class SerialMonitorPage extends StatefulWidget {
+  const SerialMonitorPage({super.key});
   @override
-  State<BluetoothPage> createState() => _BluetoothPageState();
+  State<SerialMonitorPage> createState() => _SerialMonitorPageState();
 }
 
-class _BluetoothPageState extends State<BluetoothPage> {
-  StreamSubscription<List<ScanResult>>? _scanSub;
-  List<ScanResult> _scanResults = [];
-  BluetoothDevice? _connectedDevice;
-  BluetoothCharacteristic? _writeChar;
-  final TextEditingController _cmdController = TextEditingController();
-  String _selectedBaud = '9600';
+class _SerialMonitorPageState extends State<SerialMonitorPage> {
+  final SppConnectionPlugin _bt = SppConnectionPlugin();
+
+  // 掃描與裝置列表
   bool _scanning = false;
-  bool _connecting = false;
+  List<BluetoothDeviceModel> _devices = [];
+  Timer? _scanTimer;
+
+  // 連線後控制
+  bool _connected = false;
+  String _log = '';
+  final TextEditingController _sendCtrl = TextEditingController();
+  final ScrollController _logScroll = ScrollController();
+
+  // Serial Monitor 選項
+  bool _hexMode = false;
+  String newlineType = TextUtils.newlineCRLF;
+  bool _appendCrlf = true;
 
   @override
   void initState() {
     super.initState();
-    startScan();
+    _bt.dataStream.listen(_onDataReceived);
+    _bt.connectionStateStream.listen((state) {
+      setState(() => _connected = state == BluetoothConnectionState.connected);
+      if (!_connected) _appendLog('** Disconnected **');
+    });
+    _initBluetooth();
+  }
+
+  Future<void> _initBluetooth() async {
+    bool hasPerm = await _bt.hasPermissions();
+    if (!hasPerm) {
+      hasPerm = await _bt.requestPermissions();
+    }
+    if (hasPerm) {
+      _scan();
+      // Start timer for auto-refresh when not connected
+      _scanTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+        if (!_connected && !_scanning) _scan();
+      });
+    } else {
+      _appendLog('Bluetooth permissions denied');
+    }
   }
 
   @override
   void dispose() {
-    _scanSub?.cancel();
-    _cmdController.dispose();
+    _scanTimer?.cancel();
+    _sendCtrl.dispose();
+    _logScroll.dispose();
     super.dispose();
   }
 
-  Future<void> startScan({int timeoutSeconds = 5}) async {
-    _scanSub?.cancel();
+  void _onDataReceived(Uint8List data) {
+    final text =
+        _hexMode
+            ? data.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')
+            : String.fromCharCodes(data);
+    _appendLog('[Device] $text');
+  }
+
+  void _appendLog(String s) {
+    setState(() => _log += '$s\n');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_logScroll.hasClients) {
+        _logScroll.jumpTo(_logScroll.position.maxScrollExtent);
+      }
+    });
+  }
+
+  void _clearLog() => setState(() => _log = '');
+
+  // Scan paired devices
+  Future<void> _scan() async {
+    setState(() => _scanning = true);
+    final devs = await _bt.getPairedDevices();
     setState(() {
-      _scanResults = [];
-      _scanning = true;
-    });
-
-    // listen to scan results (returns List<ScanResult>)
-    _scanSub = FlutterBluePlus.scanResults.listen(
-      (results) {
-        setState(() => _scanResults = results);
-      },
-      onError: (e) {
-        debugPrint('scan error: $e');
-      },
-    );
-
-    // start scan (static API)
-    await FlutterBluePlus.startScan(timeout: Duration(seconds: timeoutSeconds));
-    setState(() => _scanning = false);
-  }
-
-  Future<void> stopScan() async {
-    await FlutterBluePlus.stopScan();
-    _scanSub?.cancel();
-    setState(() => _scanning = false);
-  }
-
-  Future<void> connectToDevice(BluetoothDevice device) async {
-    if (_connectedDevice != null) await disconnectDevice();
-
-    setState(() => _connecting = true);
-    // connect (device API)
-    try {
-      await device.connect();
-    } catch (e) {
-      // sometimes throws if already connected; ignore
-      debugPrint('connect error: $e');
-    }
-
-    // listen connection state
-    final sub = device.connectionState.listen((state) {
-      if (state == BluetoothConnectionState.connected) {
-        setState(() => _connectedDevice = device);
-        discoverServicesAndFindWritable(device);
-      } else if (state == BluetoothConnectionState.disconnected) {
-        setState(() {
-          _connectedDevice = null;
-          _writeChar = null;
-        });
-      }
-    });
-
-    // ensure sub cancelled on disconnect (per docs)
-    device.cancelWhenDisconnected(sub, delayed: true, next: true);
-
-    setState(() => _connecting = false);
-  }
-
-  Future<void> disconnectDevice() async {
-    try {
-      await _connectedDevice?.disconnect();
-    } catch (e) {
-      debugPrint('disconnect error: $e');
-    }
-    setState(() {
-      _connectedDevice = null;
-      _writeChar = null;
+      _devices = devs;
+      _scanning = false;
     });
   }
 
-  Future<void> discoverServicesAndFindWritable(BluetoothDevice device) async {
-    try {
-      final services = await device.discoverServices();
-      BluetoothCharacteristic? candidate;
-      // prefer Nordic UART RX UUID if present (common for UART-over-BLE)
-      const nusRxUuid = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
-      for (final s in services) {
-        for (final c in s.characteristics) {
-          final uuid = c.uuid.toString().toLowerCase();
-          if (uuid.contains(nusRxUuid)) {
-            candidate = c;
-            break;
-          }
-          if (candidate == null &&
-              (c.properties.write || c.properties.writeWithoutResponse)) {
-            candidate = c;
-          }
-        }
-        if (candidate != null) break;
-      }
-      setState(() => _writeChar = candidate);
-    } catch (e) {
-      debugPrint('discover services error: $e');
-    }
+  Future<void> _connect(BluetoothDeviceModel d) async {
+    _appendLog('Connecting to ${d.name}...');
+    await _bt.connectToDevice(d.address);
+
+    // Set modes
+    _bt.setHexMode(_hexMode);
+    _bt.setNewlineType(newlineType);
+
+    _appendLog('Connected to ${d.name}');
   }
 
-  Future<void> sendCommand() async {
-    final device = _connectedDevice;
-    final char = _writeChar;
-    final text = _cmdController.text;
-    if (device == null) {
-      _showSnack('未連線裝置');
-      return;
-    }
-    if (char == null) {
-      _showSnack('找不到可寫入的 characteristic');
-      return;
-    }
-    if (text.isEmpty) {
-      _showSnack('指令為空');
-      return;
+  void _disconnect() => _bt.disconnect();
+
+  Future<void> _send() async {
+    String txt = _sendCtrl.text;
+    if (txt.isEmpty) return;
+
+    if (!_hexMode && _appendCrlf) {
+      txt += '\r\n';
     }
 
-    final bytes = utf8.encode(text);
-    final withoutResponse = char.properties.writeWithoutResponse;
-    const chunkSize = 20; // safe default
-    int offset = 0;
-    try {
-      while (offset < bytes.length) {
-        final end =
-            (offset + chunkSize < bytes.length)
-                ? offset + chunkSize
-                : bytes.length;
-        final chunk = Uint8List.fromList(bytes.sublist(offset, end));
-        await char.write(chunk, withoutResponse: withoutResponse);
-        offset = end;
-        await Future.delayed(const Duration(milliseconds: 8));
-      }
-      _showSnack('已傳送: $text');
-    } catch (e) {
-      _showSnack('傳送失敗: $e');
+    if (_hexMode) {
+      // Assume input is hex string like '48 65 6C 6C 6F'
+      await _bt.sendHex(txt);
+      _appendLog('[Me][HEX] $txt');
+    } else {
+      await _bt.sendText(txt);
+      _appendLog('[Me] $txt');
     }
-  }
 
-  void _showSnack(String s) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s)));
-  }
-
-  Widget _deviceTile(ScanResult r) {
-    final name =
-        r.device.name.isNotEmpty ? r.device.name : r.device.id.toString();
-    return ListTile(
-      title: Text(name),
-      subtitle: Text('RSSI: ${r.rssi}'),
-      trailing: ElevatedButton(
-        onPressed:
-            (_connecting || _connectedDevice != null)
-                ? null
-                : () => connectToDevice(r.device),
-        child: const Text('Connect'),
-      ),
-    );
+    _sendCtrl.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    final connected = _connectedDevice != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('Rehabilitation Hand (BLE)')),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                const Text('Baud:'),
-                const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: _selectedBaud,
-                  items:
-                      ['9600', '19200', '38400', '115200']
-                          .map(
-                            (b) => DropdownMenuItem(
-                              value: b,
-                              child: Text('$b bps'),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (v) => setState(() => _selectedBaud = v ?? '9600'),
-                ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed:
-                      _scanning ? stopScan : () => startScan(timeoutSeconds: 5),
-                  child: Text(_scanning ? 'Stop Scan' : 'Scan'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child:
-                  _scanResults.isEmpty
-                      ? const Center(child: Text('No devices found (try Scan)'))
-                      : ListView.separated(
-                        itemCount: _scanResults.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (_, i) => _deviceTile(_scanResults[i]),
-                      ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _cmdController,
-              decoration: const InputDecoration(
-                labelText: 'Command',
-                border: OutlineInputBorder(),
+      appBar: AppBar(
+        title: Text(_connected ? 'Serial Monitor' : 'Select Device'),
+        actions: [
+          if (!_connected)
+            TextButton(
+              onPressed: _scanning ? null : _scan,
+              child: Text(
+                _scanning ? 'Scanning...' : 'Refresh',
+                style: const TextStyle(color: Colors.white),
               ),
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: connected ? sendCommand : null,
-                  icon: const Icon(Icons.send),
-                  label: const Text('Send'),
-                ),
-                const SizedBox(width: 12),
-                connected
-                    ? ElevatedButton.icon(
-                      onPressed: disconnectDevice,
-                      icon: const Icon(Icons.link_off),
-                      label: const Text('Disconnect'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                    )
-                    : const SizedBox(),
-              ],
+          if (_connected)
+            TextButton(
+              onPressed: _disconnect,
+              child: const Text(
+                'Disconnect',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-            const SizedBox(height: 8),
-            connected
-                ? Text(
-                  'Connected to ${_connectedDevice!.name.isNotEmpty ? _connectedDevice!.name : _connectedDevice!.id}',
-                )
-                : const Text('Not connected'),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: _connected ? _buildMonitor() : _buildDeviceList(),
+      ),
+    );
+  }
+
+  Widget _buildDeviceList() {
+    if (_devices.isEmpty && !_scanning) {
+      return const Center(
+        child: Text(
+          'No paired devices found. Pair devices in system settings.',
+        ),
+      );
+    }
+    return ListView.builder(
+      itemCount: _devices.length,
+      itemBuilder: (_, i) {
+        final d = _devices[i];
+        return ListTile(
+          title: Text(d.name ?? 'Unknown'),
+          subtitle: Text(d.address, style: const TextStyle(fontSize: 12)),
+          onTap: () => _connect(d),
+        );
+      },
+    );
+  }
+
+  Widget _buildMonitor() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Checkbox(
+              value: _hexMode,
+              onChanged: (v) {
+                setState(() => _hexMode = v ?? false);
+                _bt.setHexMode(_hexMode);
+              },
+            ),
+            const Text('Hex Mode'),
+            const Spacer(),
+            Checkbox(
+              value: _appendCrlf,
+              onChanged: (v) => setState(() => _appendCrlf = v ?? true),
+            ),
+            const Text('Append CRLF'),
+            IconButton(icon: const Icon(Icons.clear), onPressed: _clearLog),
           ],
         ),
-      ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            padding: const EdgeInsets.all(8),
+            child: SingleChildScrollView(
+              controller: _logScroll,
+              child: SelectableText(
+                _log.isEmpty ? '(No data yet)' : _log,
+                style: const TextStyle(fontFamily: 'monospace'),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _sendCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Send message',
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (_) => _send(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton.icon(
+              onPressed: _send,
+              icon: const Icon(Icons.send),
+              label: const Text('Send'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
