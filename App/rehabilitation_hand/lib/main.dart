@@ -60,11 +60,14 @@ class _BluetoothPageState extends State<BluetoothPage> {
     });
 
     // listen to scan results (returns List<ScanResult>)
-    _scanSub = FlutterBluePlus.scanResults.listen((results) {
-      setState(() => _scanResults = results);
-    }, onError: (e) {
-      debugPrint('scan error: $e');
-    });
+    _scanSub = FlutterBluePlus.scanResults.listen(
+      (results) {
+        setState(() => _scanResults = results);
+      },
+      onError: (e) {
+        debugPrint('scan error: $e');
+      },
+    );
 
     // start scan (static API)
     await FlutterBluePlus.startScan(timeout: Duration(seconds: timeoutSeconds));
@@ -169,7 +172,10 @@ class _BluetoothPageState extends State<BluetoothPage> {
     int offset = 0;
     try {
       while (offset < bytes.length) {
-        final end = (offset + chunkSize < bytes.length) ? offset + chunkSize : bytes.length;
+        final end =
+            (offset + chunkSize < bytes.length)
+                ? offset + chunkSize
+                : bytes.length;
         final chunk = Uint8List.fromList(bytes.sublist(offset, end));
         await char.write(chunk, withoutResponse: withoutResponse);
         offset = end;
@@ -187,12 +193,16 @@ class _BluetoothPageState extends State<BluetoothPage> {
   }
 
   Widget _deviceTile(ScanResult r) {
-    final name = r.device.name.isNotEmpty ? r.device.name : r.device.id.toString();
+    final name =
+        r.device.name.isNotEmpty ? r.device.name : r.device.id.toString();
     return ListTile(
       title: Text(name),
       subtitle: Text('RSSI: ${r.rssi}'),
       trailing: ElevatedButton(
-        onPressed: (_connecting || _connectedDevice != null) ? null : () => connectToDevice(r.device),
+        onPressed:
+            (_connecting || _connectedDevice != null)
+                ? null
+                : () => connectToDevice(r.device),
         child: const Text('Connect'),
       ),
     );
@@ -205,50 +215,81 @@ class _BluetoothPageState extends State<BluetoothPage> {
       appBar: AppBar(title: const Text('Rehabilitation Hand (BLE)')),
       body: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(children: [
-          Row(children: [
-            const Text('Baud:'),
-            const SizedBox(width: 8),
-            DropdownButton<String>(
-              value: _selectedBaud,
-              items: ['9600','19200','38400','115200'].map((b) => DropdownMenuItem(value: b, child: Text('$b bps'))).toList(),
-              onChanged: (v) => setState(() => _selectedBaud = v ?? '9600'),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Text('Baud:'),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: _selectedBaud,
+                  items:
+                      ['9600', '19200', '38400', '115200']
+                          .map(
+                            (b) => DropdownMenuItem(
+                              value: b,
+                              child: Text('$b bps'),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (v) => setState(() => _selectedBaud = v ?? '9600'),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed:
+                      _scanning ? stopScan : () => startScan(timeoutSeconds: 5),
+                  child: Text(_scanning ? 'Stop Scan' : 'Scan'),
+                ),
+              ],
             ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _scanning ? stopScan : () => startScan(timeoutSeconds: 5),
-              child: Text(_scanning ? 'Stop Scan' : 'Scan'),
+            const SizedBox(height: 8),
+            Expanded(
+              child:
+                  _scanResults.isEmpty
+                      ? const Center(child: Text('No devices found (try Scan)'))
+                      : ListView.separated(
+                        itemCount: _scanResults.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (_, i) => _deviceTile(_scanResults[i]),
+                      ),
             ),
-          ]),
-          const SizedBox(height: 8),
-          Expanded(
-            child: _scanResults.isEmpty
-                ? const Center(child: Text('No devices found (try Scan)'))
-                : ListView.separated(
-                    itemCount: _scanResults.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (_, i) => _deviceTile(_scanResults[i]),
-                  ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _cmdController,
-            decoration: const InputDecoration(labelText: 'Command', border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 8),
-          Row(children: [
-            ElevatedButton.icon(onPressed: connected ? sendCommand : null, icon: const Icon(Icons.send), label: const Text('Send')),
-            const SizedBox(width: 12),
-            connected ? ElevatedButton.icon(
-              onPressed: disconnectDevice,
-              icon: const Icon(Icons.link_off),
-              label: const Text('Disconnect'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            ) : const SizedBox(),
-          ]),
-          const SizedBox(height: 8),
-          connected ? Text('Connected to ${_connectedDevice!.name.isNotEmpty ? _connectedDevice!.name : _connectedDevice!.id}') : const Text('Not connected'),
-        ]),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _cmdController,
+              decoration: const InputDecoration(
+                labelText: 'Command',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: connected ? sendCommand : null,
+                  icon: const Icon(Icons.send),
+                  label: const Text('Send'),
+                ),
+                const SizedBox(width: 12),
+                connected
+                    ? ElevatedButton.icon(
+                      onPressed: disconnectDevice,
+                      icon: const Icon(Icons.link_off),
+                      label: const Text('Disconnect'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                    )
+                    : const SizedBox(),
+              ],
+            ),
+            const SizedBox(height: 8),
+            connected
+                ? Text(
+                  'Connected to ${_connectedDevice!.name.isNotEmpty ? _connectedDevice!.name : _connectedDevice!.id}',
+                )
+                : const Text('Not connected'),
+          ],
+        ),
       ),
     );
   }
