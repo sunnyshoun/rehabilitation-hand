@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/auth_service.dart';
 import 'services/bluetooth_service.dart';
+import 'services/motion_storage_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => BluetoothService()),
+        ChangeNotifierProvider(create: (_) => MotionStorageService()),
       ],
       child: MaterialApp(
         title: '復健手控制系統',

@@ -47,3 +47,24 @@ class FingerPosition {
     }
   }
 }
+
+class MotionPlaylist {
+  final String id;
+  final String name;
+  final List<PlaylistItem> items;
+  final DateTime createdAt;
+
+  MotionPlaylist({
+    required this.id,
+    required this.name,
+    required this.items,
+    required this.createdAt,
+  });
+}
+
+class PlaylistItem {
+  final String templateId;
+  final int duration;
+
+  PlaylistItem({required this.templateId, required this.duration});
+}
