@@ -176,22 +176,17 @@ class MotionStorageService with ChangeNotifier {
   }
 
   Future<void> reorderTemplate(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
     final item = _customTemplates.removeAt(oldIndex);
     _customTemplates.insert(newIndex, item);
     await _saveCustomTemplates();
+    notifyListeners();
   }
 
-  // *** NEW: Method to handle reordering of default templates ***
   Future<void> reorderDefaultTemplate(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
     final item = _defaultTemplates.removeAt(oldIndex);
     _defaultTemplates.insert(newIndex, item);
     await _saveDefaultTemplateOrder();
+    notifyListeners();
   }
 
   // --- Playlist Management ---
