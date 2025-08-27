@@ -231,7 +231,6 @@ class TemplateCard extends StatefulWidget {
 class _TemplateCardState extends State<TemplateCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -240,10 +239,6 @@ class _TemplateCardState extends State<TemplateCard>
       vsync: this,
       duration: const Duration(milliseconds: 150),
       reverseDuration: const Duration(milliseconds: 250),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 3).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn),
     );
 
     _controller.addStatusListener((status) {

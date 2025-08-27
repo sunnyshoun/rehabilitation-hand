@@ -24,7 +24,6 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   final List<MotionTemplate> _sequence = [];
   final List<int> _durations = [];
   bool _isPlaying = false;
-  int _currentPlayingIndex = -1;
   String? _currentPlaylistId;
   String _currentPlaylistName = '未命名播放列表';
 
@@ -65,12 +64,10 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
 
     setState(() {
       _isPlaying = true;
-      _currentPlayingIndex = 0;
     });
 
     for (int i = 0; i < _sequence.length; i++) {
       if (!_isPlaying) break;
-      setState(() => _currentPlayingIndex = i);
 
       final template = _sequence[i];
       if (template.positions.isNotEmpty) {
@@ -82,7 +79,6 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
 
     setState(() {
       _isPlaying = false;
-      _currentPlayingIndex = -1;
     });
 
     if (mounted) {
@@ -93,7 +89,6 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   void _stopPlaying() {
     setState(() {
       _isPlaying = false;
-      _currentPlayingIndex = -1;
     });
   }
 

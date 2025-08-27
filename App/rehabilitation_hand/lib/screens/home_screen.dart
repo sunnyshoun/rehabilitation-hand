@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
 import '../services/bluetooth_service.dart';
 import '../widgets/home_panel.dart';
 import '../widgets/control_panel.dart';
