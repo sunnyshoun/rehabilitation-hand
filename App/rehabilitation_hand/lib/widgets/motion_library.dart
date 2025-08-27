@@ -79,6 +79,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
                       ),
                     ),
                     _buildReorderableGrid(
+                      storageService: storageService,
                       templates: storageService.defaultTemplates,
                       isCustom: false,
                       onReorder: (oldIndex, newIndex) async {
@@ -111,6 +112,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
                       )
                     else
                       _buildReorderableGrid(
+                        storageService: storageService,
                         templates: storageService.customTemplates,
                         isCustom: true,
                         onReorder: (oldIndex, newIndex) async {
@@ -136,6 +138,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
   }
 
   Widget _buildReorderableGrid({
+    required MotionStorageService storageService,
     required List<MotionTemplate> templates,
     required bool isCustom,
     required Future<void> Function(int, int) onReorder,
@@ -154,13 +157,11 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
         final template = templates[index];
         final GlobalKey globalKey = _getKeyForTemplate(template.id);
 
-        // *** KEY FIX: Simplified structure to avoid GlobalKey conflicts ***
         return TemplateCard(
-          key: ValueKey(template.id), // Required for ReorderableGridView
+          key: ValueKey(template.id),
           template: template,
           isCustom: isCustom,
-          actionGlobalKey:
-              globalKey, // Pass the GlobalKey as a separate parameter
+          actionGlobalKey: globalKey,
           onTap: () => widget.onAddToSequence(template),
           onShowActions: () => widget.onShowActions(globalKey, template),
         );
@@ -177,28 +178,50 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
           );
         }
       },
+      dragWidgetBuilder: (index, child) {
+        final template = templates[index];
+        final isCustomTemplate = isCustom; // 直接使用傳入的 isCustom 即可，更簡潔
+
+        final Color dragHighlightColor =
+            isCustomTemplate ? Colors.purple.shade100 : Colors.blue.shade100;
+
+        return Material(
+          elevation: 4.0,
+          color: Colors.transparent,
+          // ✅ **【新增】**：將陰影顏色和表面著色也設為透明
+          shadowColor: Colors.transparent, // 確保陰影本身沒有預設顏色疊加
+          surfaceTintColor: Colors.transparent, // 消除任何潛在的表面著色效果
+          child: TemplateCard(
+            key: ValueKey('dragging_${template.id}'),
+            template: template,
+            isCustom: isCustomTemplate,
+            backgroundColorOverride: dragHighlightColor,
+          ),
+        );
+      },
     );
   }
 }
 
-// ====== Reusable Template Card Widget (SIMPLIFIED TO AVOID KEY CONFLICTS) ======
+// ====== Reusable Template Card Widget ======
 class TemplateCard extends StatefulWidget {
   final MotionTemplate template;
   final bool isCustom;
   final bool isHighlighted;
-  final GlobalKey?
-  actionGlobalKey; // Optional GlobalKey only for action positioning
+  final GlobalKey? actionGlobalKey;
   final VoidCallback? onTap;
   final VoidCallback? onShowActions;
+  final Color? backgroundColorOverride; // 新增：背景色覆寫參數
 
   const TemplateCard({
-    super.key, // This will be the ValueKey for ReorderableGridView
+    super.key,
     required this.template,
     this.isCustom = false,
     this.isHighlighted = false,
-    this.actionGlobalKey, // Only used when we need to track position for actions
+    this.actionGlobalKey,
     this.onTap,
     this.onShowActions,
+    this.backgroundColorOverride, // 新增：在建構子中加入
   });
 
   @override
@@ -251,13 +274,11 @@ class _TemplateCardState extends State<TemplateCard>
             ? Colors.purple.shade100.withAlpha(150)
             : Colors.blue.shade100.withAlpha(150);
 
-    // *** KEY FIX: Only use GlobalKey when specifically needed for action positioning ***
     return Card(
-      key:
-          widget
-              .actionGlobalKey, // Only apply GlobalKey when needed for actions
+      key: widget.actionGlobalKey,
       elevation: widget.isHighlighted ? 12 : 2,
       clipBehavior: Clip.antiAlias,
+      color: widget.backgroundColorOverride, // 修改：使用背景色覆寫
       shape:
           widget.isHighlighted
               ? RoundedRectangleBorder(
