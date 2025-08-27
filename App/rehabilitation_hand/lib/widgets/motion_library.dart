@@ -82,12 +82,15 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
                       storageService: storageService,
                       templates: storageService.defaultTemplates,
                       isCustom: false,
-                      onReorder: (oldIndex, newIndex) async {
-                        await storageService.reorderDefaultTemplate(
-                          oldIndex,
-                          newIndex,
-                        );
-                      },
+                      onReorder:
+                          widget.onEditTemplate == null
+                              ? null // 播放模式下禁用排序
+                              : (oldIndex, newIndex) async {
+                                await storageService.reorderDefaultTemplate(
+                                  oldIndex,
+                                  newIndex,
+                                );
+                              },
                     ),
                     const SizedBox(height: 16),
                     const Padding(
@@ -115,12 +118,15 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
                         storageService: storageService,
                         templates: storageService.customTemplates,
                         isCustom: true,
-                        onReorder: (oldIndex, newIndex) async {
-                          await storageService.reorderTemplate(
-                            oldIndex,
-                            newIndex,
-                          );
-                        },
+                        onReorder:
+                            widget.onEditTemplate == null
+                                ? null // 播放模式下禁用排序
+                                : (oldIndex, newIndex) async {
+                                  await storageService.reorderTemplate(
+                                    oldIndex,
+                                    newIndex,
+                                  );
+                                },
                       ),
                   ],
                 ),
@@ -141,8 +147,43 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
     required MotionStorageService storageService,
     required List<MotionTemplate> templates,
     required bool isCustom,
-    required Future<void> Function(int, int) onReorder,
+    Future<void> Function(int, int)? onReorder,
   }) {
+    final isPlayingMode = widget.onEditTemplate == null;
+
+    // 如果在播放模式或 onReorder 為 null，使用普通的 GridView
+    if (isPlayingMode || onReorder == null) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 2.5,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: templates.length,
+        itemBuilder: (context, index) {
+          final template = templates[index];
+          final GlobalKey globalKey = _getKeyForTemplate(template.id);
+
+          return TemplateCard(
+            key: ValueKey(template.id),
+            template: template,
+            isCustom: isCustom,
+            actionGlobalKey: globalKey,
+            onTap: () => widget.onAddToSequence(template),
+            onShowActions:
+                isPlayingMode
+                    ? null // 播放模式下禁用動作選項
+                    : () => widget.onShowActions(globalKey, template),
+            showMoreButton: !isPlayingMode, // 播放模式下隱藏三個點按鈕
+          );
+        },
+      );
+    }
+
+    // 非播放模式，使用可重新排序的網格
     return ReorderableGridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -164,6 +205,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
           actionGlobalKey: globalKey,
           onTap: () => widget.onAddToSequence(template),
           onShowActions: () => widget.onShowActions(globalKey, template),
+          showMoreButton: true,
         );
       },
       onReorder: (oldIndex, newIndex) async {
@@ -180,7 +222,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
       },
       dragWidgetBuilder: (index, child) {
         final template = templates[index];
-        final isCustomTemplate = isCustom; // 直接使用傳入的 isCustom 即可，更簡潔
+        final isCustomTemplate = isCustom;
 
         final Color dragHighlightColor =
             isCustomTemplate ? Colors.purple.shade100 : Colors.blue.shade100;
@@ -188,14 +230,14 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
         return Material(
           elevation: 4.0,
           color: Colors.transparent,
-          // ✅ **【新增】**：將陰影顏色和表面著色也設為透明
-          shadowColor: Colors.transparent, // 確保陰影本身沒有預設顏色疊加
-          surfaceTintColor: Colors.transparent, // 消除任何潛在的表面著色效果
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           child: TemplateCard(
             key: ValueKey('dragging_${template.id}'),
             template: template,
             isCustom: isCustomTemplate,
             backgroundColorOverride: dragHighlightColor,
+            showMoreButton: false, // 拖曳時不顯示更多按鈕
           ),
         );
       },
@@ -211,7 +253,8 @@ class TemplateCard extends StatefulWidget {
   final GlobalKey? actionGlobalKey;
   final VoidCallback? onTap;
   final VoidCallback? onShowActions;
-  final Color? backgroundColorOverride; // 新增：背景色覆寫參數
+  final Color? backgroundColorOverride;
+  final bool showMoreButton; // 新增：是否顯示更多按鈕
 
   const TemplateCard({
     super.key,
@@ -221,7 +264,8 @@ class TemplateCard extends StatefulWidget {
     this.actionGlobalKey,
     this.onTap,
     this.onShowActions,
-    this.backgroundColorOverride, // 新增：在建構子中加入
+    this.backgroundColorOverride,
+    this.showMoreButton = true, // 預設顯示
   });
 
   @override
@@ -273,7 +317,7 @@ class _TemplateCardState extends State<TemplateCard>
       key: widget.actionGlobalKey,
       elevation: widget.isHighlighted ? 12 : 2,
       clipBehavior: Clip.antiAlias,
-      color: widget.backgroundColorOverride, // 修改：使用背景色覆寫
+      color: widget.backgroundColorOverride,
       shape:
           widget.isHighlighted
               ? RoundedRectangleBorder(
@@ -307,7 +351,8 @@ class _TemplateCardState extends State<TemplateCard>
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (widget.isCustom)
+                  // 只有自訂動作且 showMoreButton 為 true 時才顯示三個點
+                  if (widget.isCustom && widget.showMoreButton)
                     IconButton(
                       icon: const Icon(Icons.more_vert, color: Colors.grey),
                       onPressed: widget.onShowActions,

@@ -24,6 +24,9 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   final List<MotionTemplate> _sequence = [];
   final List<int> _durations = [];
   bool _isPlaying = false;
+  bool _isPaused = false;
+  int _currentPlayingIndex = -1;
+  Timer? _playTimer;
   String? _currentPlaylistId;
   String _currentPlaylistName = '未命名播放列表';
 
@@ -34,10 +37,13 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
 
   @override
   void dispose() {
+    _playTimer?.cancel();
     super.dispose();
   }
 
   void _addToSequence(MotionTemplate template) {
+    if (_isPlaying) return; // 播放中不允許添加
+
     setState(() {
       _sequence.add(template);
       _durations.add(2); // Default duration
@@ -64,32 +70,119 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
 
     setState(() {
       _isPlaying = true;
+      _isPaused = false;
+      _currentPlayingIndex = 0;
     });
 
-    for (int i = 0; i < _sequence.length; i++) {
-      if (!_isPlaying) break;
+    await _playCurrentMotion();
+  }
 
-      final template = _sequence[i];
-      if (template.positions.isNotEmpty) {
-        final position = template.positions.first;
-        await btService.sendFingerPosition(position);
-        await Future.delayed(Duration(seconds: _durations[i]));
+  Future<void> _playCurrentMotion() async {
+    if (!_isPlaying || _isPaused || _currentPlayingIndex >= _sequence.length) {
+      if (_currentPlayingIndex >= _sequence.length) {
+        _stopPlaying();
       }
+      return;
     }
 
+    final btService = Provider.of<BluetoothService>(context, listen: false);
+    final template = _sequence[_currentPlayingIndex];
+
+    if (template.positions.isNotEmpty) {
+      final position = template.positions.first;
+      await btService.sendFingerPosition(position);
+
+      _playTimer?.cancel();
+      _playTimer = Timer(
+        Duration(seconds: _durations[_currentPlayingIndex]),
+        () {
+          if (_isPlaying && !_isPaused && mounted) {
+            setState(() {
+              _currentPlayingIndex++;
+            });
+            _playCurrentMotion();
+          }
+        },
+      );
+    }
+  }
+
+  void _pausePlaying() {
     setState(() {
-      _isPlaying = false;
+      _isPaused = true;
     });
+    _playTimer?.cancel();
+  }
 
-    if (mounted) {
-      showTopSnackBar(context, '動作序列執行完成');
-    }
+  void _resumePlaying() {
+    setState(() {
+      _isPaused = false;
+    });
+    _playCurrentMotion();
   }
 
   void _stopPlaying() {
     setState(() {
       _isPlaying = false;
+      _isPaused = false;
+      _currentPlayingIndex = -1;
     });
+    _playTimer?.cancel();
+
+    if (mounted) {
+      showTopSnackBar(context, '動作序列已停止');
+    }
+  }
+
+  void _nextMotion() {
+    if (!_isPlaying || _currentPlayingIndex >= _sequence.length - 1) return;
+
+    _playTimer?.cancel();
+    setState(() {
+      _currentPlayingIndex++;
+    });
+    _playCurrentMotion();
+  }
+
+  void _previousMotion() {
+    if (!_isPlaying || _currentPlayingIndex <= 0) return;
+
+    _playTimer?.cancel();
+    setState(() {
+      _currentPlayingIndex--;
+    });
+    _playCurrentMotion();
+  }
+
+  void _clearSequence() {
+    if (_isPlaying) return; // 播放中不允許清除
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('確認清除'),
+            content: const Text('確定要清除所有序列內的動作嗎？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('取消'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _sequence.clear();
+                    _durations.clear();
+                  });
+                  Navigator.pop(context);
+                  showTopSnackBar(context, '序列已清空');
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('清除', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+    );
   }
 
   Future<void> _showSequenceDialog() async {
@@ -100,7 +193,24 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('序列內容'),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('序列內容'),
+                  if (!_isPlaying)
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _clearSequence();
+                      },
+                      icon: const Icon(Icons.clear_all, color: Colors.red),
+                      label: const Text(
+                        '清除全部',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                ],
+              ),
               content: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
                 height: 400,
@@ -122,11 +232,81 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
                         ],
                       ),
                     ),
+                    if (_isPlaying)
+                      Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.play_arrow,
+                              color: Colors.blue,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '正在播放: ${_currentPlayingIndex + 1} / ${_sequence.length}',
+                              style: TextStyle(color: Colors.blue.shade700),
+                            ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 10),
                     Expanded(
                       child:
                           _sequence.isEmpty
                               ? const Center(child: Text('序列已清空'))
+                              : _isPlaying
+                              ? ListView.builder(
+                                itemCount: _sequence.length,
+                                itemBuilder: (context, index) {
+                                  final template = _sequence[index];
+                                  final isCurrentPlaying =
+                                      index == _currentPlayingIndex;
+                                  return Card(
+                                    color:
+                                        isCurrentPlaying
+                                            ? Colors.green.shade100
+                                            : null,
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                    ),
+                                    child: ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor:
+                                            isCurrentPlaying
+                                                ? Colors.green
+                                                : null,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            color:
+                                                isCurrentPlaying
+                                                    ? Colors.white
+                                                    : null,
+                                          ),
+                                        ),
+                                      ),
+                                      title: Text(template.name),
+                                      subtitle: Text(
+                                        '持續: ${_durations[index]} 秒',
+                                      ),
+                                      trailing:
+                                          isCurrentPlaying
+                                              ? const Icon(
+                                                Icons.play_arrow,
+                                                color: Colors.green,
+                                              )
+                                              : null,
+                                    ),
+                                  );
+                                },
+                              )
                               : ReorderableListView.builder(
                                 itemCount: _sequence.length,
                                 itemBuilder: (context, index) {
@@ -215,6 +395,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   }
 
   void _savePlaylist() {
+    if (_isPlaying) return; // 播放中不允許儲存
+
     if (_sequence.isEmpty) {
       showTopSnackBar(
         context,
@@ -322,6 +504,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   }
 
   void _loadPlaylist(MotionPlaylist playlist) {
+    if (_isPlaying) return; // 播放中不允許載入
+
     final storageService = Provider.of<MotionStorageService>(
       context,
       listen: false,
@@ -348,6 +532,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   }
 
   void _newPlaylist() {
+    if (_isPlaying) return; // 播放中不允許新增
+
     setState(() {
       _sequence.clear();
       _durations.clear();
@@ -357,6 +543,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   }
 
   void _showPlaylistMenu() {
+    if (_isPlaying) return; // 播放中不允許管理
+
     final storageService = Provider.of<MotionStorageService>(
       context,
       listen: false,
@@ -566,6 +754,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
     MotionTemplate template,
     MotionStorageService storageService,
   ) async {
+    if (_isPlaying) return; // 播放中不允許刪除
+
     final confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -588,6 +778,21 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
     if (confirm == true) {
       try {
         await storageService.deleteTemplate(template.id);
+
+        // 從序列中移除被刪除的動作
+        setState(() {
+          final indicesToRemove = <int>[];
+          for (int i = _sequence.length - 1; i >= 0; i--) {
+            if (_sequence[i].id == template.id) {
+              indicesToRemove.add(i);
+            }
+          }
+          for (final index in indicesToRemove) {
+            _sequence.removeAt(index);
+            _durations.removeAt(index);
+          }
+        });
+
         showTopSnackBar(context, '動作 "${template.name}" 已刪除');
       } catch (e) {
         showTopSnackBar(
@@ -601,6 +806,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   }
 
   void _showActionsForTemplate(GlobalKey key, MotionTemplate template) {
+    if (_isPlaying) return; // 播放中不允許顯示動作選項
+
     final RenderBox? stackRenderBox =
         _stackKey.currentContext?.findRenderObject() as RenderBox?;
     final RenderBox? itemRenderBox =
@@ -655,9 +862,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
             Positioned.fill(
               child: GestureDetector(
                 onTap: _hideActions,
-                child: Container(
-                  color: Colors.black.withAlpha(153),
-                ), // Replaced withOpacity
+                child: Container(color: Colors.black.withAlpha(153)),
               ),
             ),
             if (_highlightedTemplate != null &&
@@ -726,10 +931,70 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
     );
   }
 
+  Widget _buildPlayControls() {
+    if (!_isPlaying) {
+      return ElevatedButton.icon(
+        onPressed: _sequence.isEmpty ? null : _executeSequence,
+        icon: const Icon(Icons.play_arrow, size: 16),
+        label: const Text('播放'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _sequence.isNotEmpty ? Colors.green : null,
+          foregroundColor: _sequence.isNotEmpty ? Colors.white : null,
+        ),
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: _previousMotion,
+          icon: const Icon(Icons.skip_previous),
+          tooltip: '上一個',
+          constraints: const BoxConstraints(minWidth: 32),
+          padding: const EdgeInsets.all(4),
+        ),
+        if (_isPaused)
+          IconButton(
+            onPressed: _resumePlaying,
+            icon: const Icon(Icons.play_arrow),
+            tooltip: '繼續',
+            constraints: const BoxConstraints(minWidth: 32),
+            padding: const EdgeInsets.all(4),
+          )
+        else
+          IconButton(
+            onPressed: _pausePlaying,
+            icon: const Icon(Icons.pause),
+            tooltip: '暫停',
+            constraints: const BoxConstraints(minWidth: 32),
+            padding: const EdgeInsets.all(4),
+          ),
+        IconButton(
+          onPressed: _stopPlaying,
+          icon: const Icon(Icons.stop, color: Colors.red),
+          tooltip: '停止',
+          constraints: const BoxConstraints(minWidth: 32),
+          padding: const EdgeInsets.all(4),
+        ),
+        IconButton(
+          onPressed: _nextMotion,
+          icon: const Icon(Icons.skip_next),
+          tooltip: '下一個',
+          constraints: const BoxConstraints(minWidth: 32),
+          padding: const EdgeInsets.all(4),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final btService = Provider.of<BluetoothService>(context);
     final isConnected = btService.connected;
+
+    // 監聽 storage service 的變化
+    final storageService = Provider.of<MotionStorageService>(context);
 
     return Stack(
       key: _stackKey,
@@ -740,7 +1005,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
             children: [
               MotionLibrarySection(
                 onAddToSequence: _addToSequence,
-                onEditTemplate: widget.onEditTemplate,
+                onEditTemplate:
+                    _isPlaying ? null : widget.onEditTemplate, // 播放中禁用編輯
                 onDeleteTemplate: _deleteTemplate,
                 onShowActions: _showActionsForTemplate,
               ),
@@ -749,15 +1015,16 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
                 elevation: 2,
                 child: Column(
                   children: [
-                    const ListTile(
-                      leading: Icon(Icons.playlist_play, size: 28),
-                      title: Text(
+                    ListTile(
+                      leading: const Icon(Icons.playlist_play, size: 28),
+                      title: const Text(
                         '播放列表',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      trailing: isConnected ? _buildPlayControls() : null,
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -786,6 +1053,25 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (_isPlaying && _sequence.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${_currentPlayingIndex + 1}/${_sequence.length}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -832,41 +1118,14 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            if (_isPlaying)
-                              ElevatedButton.icon(
-                                onPressed: _stopPlaying,
-                                icon: const Icon(Icons.stop, size: 16),
-                                label: const Text('停止'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                ),
-                              )
-                            else
-                              ElevatedButton.icon(
-                                onPressed:
-                                    _sequence.isEmpty || !isConnected
-                                        ? null
-                                        : _executeSequence,
-                                icon: const Icon(Icons.play_arrow, size: 16),
-                                label: const Text('播放'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      isConnected ? Colors.green : null,
-                                  foregroundColor:
-                                      isConnected ? Colors.white : null,
-                                ),
-                              ),
-                            const SizedBox(width: 8),
                             TextButton.icon(
-                              onPressed:
-                                  _sequence.isEmpty ? null : _savePlaylist,
+                              onPressed: _isPlaying ? null : _savePlaylist,
                               icon: const Icon(Icons.save, size: 16),
                               label: const Text('儲存'),
                             ),
                             const SizedBox(width: 8),
                             TextButton.icon(
-                              onPressed: _showPlaylistMenu,
+                              onPressed: _isPlaying ? null : _showPlaylistMenu,
                               icon: const Icon(Icons.folder_open, size: 16),
                               label: const Text('管理'),
                             ),
