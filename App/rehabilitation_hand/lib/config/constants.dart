@@ -6,7 +6,7 @@ class AppConstants {
   
   // 動畫時間
   static const Duration animationDuration = Duration(milliseconds: 300);
-  static const Duration snackBarDuration = Duration(seconds: 2);
+  static const Duration snackBarDuration = Duration(seconds: 1);
   static const Duration overlayAnimationDuration = Duration(milliseconds: 200);
   
   // 藍牙相關

@@ -16,7 +16,8 @@ class MotionTemplatesTab extends StatefulWidget {
   State<MotionTemplatesTab> createState() => _MotionTemplatesTabState();
 }
 
-class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
+class _MotionTemplatesTabState extends State<MotionTemplatesTab>
+    with AutomaticKeepAliveClientMixin {
   // Key to get the position of the Stack that contains the overlay
   final GlobalKey _stackKey = GlobalKey();
 
@@ -34,6 +35,9 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
   MotionTemplate? _highlightedTemplate;
   Rect? _highlightedTemplateRect;
   bool _isOverlayVisible = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -381,8 +385,17 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
                 ),
               ),
               actions: [
-                TextButton(
+                ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    shape: const StadiumBorder(),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                  ),
                   child: const Text('完成'),
                 ),
               ],
@@ -424,10 +437,20 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
             return AlertDialog(
               title: Text(_currentPlaylistId != null ? '更新播放列表' : '儲存播放列表'),
               content: TextField(
+                autofocus: true,
                 controller: nameController,
                 decoration: InputDecoration(
                   labelText: '播放列表名稱',
+                  floatingLabelBehavior:
+                      FloatingLabelBehavior.always, // 標籤永遠浮在外框上
+                  labelStyle: TextStyle(color: Colors.blue), // 標籤顏色
                   border: const OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
                   errorText: errorText,
                 ),
                 onChanged: (value) {
@@ -990,6 +1013,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final btService = Provider.of<BluetoothService>(context);
     final isConnected = btService.connected;
 

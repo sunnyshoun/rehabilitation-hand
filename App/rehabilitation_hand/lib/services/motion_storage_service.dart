@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/motion_model.dart';
+import 'package:rehabilitation_hand/models/motion_model.dart';
 
 // Key for storing data in SharedPreferences
 const String _customTemplatesKey = 'custom_motion_templates';

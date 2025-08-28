@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../models/user_model.dart';
-import '../utils/api_client.dart';
+import 'package:rehabilitation_hand/models/user_model.dart';
+import 'package:rehabilitation_hand/core/utils/api_client.dart';
 
 class AuthService extends ChangeNotifier {
   User? _currentUser;

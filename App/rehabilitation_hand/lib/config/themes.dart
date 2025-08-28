@@ -7,7 +7,6 @@ class AppThemes {
       primarySwatch: Colors.blue,
       brightness: Brightness.light, // 明確指定亮度
       useMaterial3: true,
-      // [修正] 將 CardTheme 修改為 CardThemeData
       cardTheme: const CardThemeData(
         elevation: AppConstants.cardElevation,
         margin: EdgeInsets.symmetric(vertical: 4),

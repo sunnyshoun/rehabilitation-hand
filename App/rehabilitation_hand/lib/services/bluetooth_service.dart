@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:spp_connection_plugin/spp_connection_plugin.dart';
-import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/motion_model.dart';
+import 'package:rehabilitation_hand/models/motion_model.dart';
 
 class BluetoothService extends ChangeNotifier {
   final SppConnectionPlugin _spp = SppConnectionPlugin();
