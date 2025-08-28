@@ -3,7 +3,7 @@ import 'package:rehabilitation_hand/models/motion_model.dart';
 import 'package:rehabilitation_hand/config/constants.dart';
 import 'package:rehabilitation_hand/config/themes.dart';
 import 'package:rehabilitation_hand/widgets/motion/finger_slider.dart';
-import 'preset_button.dart';
+import 'package:rehabilitation_hand/screens/control/widgets/custom_motion/preset_button.dart';
 
 class FingerControlCard extends StatelessWidget {
   final List<FingerState> fingerStates;

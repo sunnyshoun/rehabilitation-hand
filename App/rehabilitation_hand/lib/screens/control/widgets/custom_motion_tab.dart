@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rehabilitation_hand/widgets/common/common_button.dart';
+import 'package:rehabilitation_hand/core/extensions/context_extensions.dart';
 import 'package:rehabilitation_hand/models/motion_model.dart';
 import 'package:rehabilitation_hand/services/bluetooth_service.dart';
 import 'package:rehabilitation_hand/services/motion_storage_service.dart';
-import 'package:rehabilitation_hand/core/extensions/context_extensions.dart';
 import 'package:rehabilitation_hand/config/constants.dart';
 import 'package:rehabilitation_hand/config/themes.dart';
+import 'package:rehabilitation_hand/screens/control/widgets/custom_motion/custom_motion_controls.dart';
+import 'package:rehabilitation_hand/screens/control/widgets/custom_motion/save_motion_dialog.dart';
 import 'package:rehabilitation_hand/screens/control/widgets/finger_control_card.dart';
 
 class CustomMotionTab extends StatefulWidget {
@@ -103,141 +104,20 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
   }
 
   void _saveMotion() {
-    final storageService = Provider.of<MotionStorageService>(
-      context,
-      listen: false,
-    );
-
     showDialog(
       context: context,
-      builder: (context) {
-        String tempName = _isEditing ? _motionName : '';
-        String? errorText;
-        final nameController = TextEditingController(text: tempName);
-
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: AppColors.sectionBackground(context),
-              title: Text(_isEditing ? '更新動作' : '儲存動作'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: '動作名稱',
-                      floatingLabelBehavior:
-                          FloatingLabelBehavior.always, // 標籤永遠浮在外框上
-                      labelStyle: TextStyle(
-                        color: AppColors.infoText(context),
-                      ), // 使用主題顏色
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.infoText(context),
-                          width: 2,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.infoText(context),
-                          width: 2,
-                        ),
-                      ),
-                      errorText: errorText,
-                    ),
-                    onChanged: (value) {
-                      tempName = value;
-                      if (value.isNotEmpty) {
-                        final isDuplicate = storageService.isNameTaken(
-                          value,
-                          excludeId: _isEditing ? _editingTemplate?.id : null,
-                        );
-                        setDialogState(() {
-                          errorText =
-                              isDuplicate ? AppStrings.nameAlreadyExists : null;
-                        });
-                      } else {
-                        setDialogState(() {
-                          errorText = null;
-                        });
-                      }
-                    },
-                    autofocus: true,
-                  ),
-                ],
-              ),
-              actions: [
-                CommonButton(
-                  label: AppStrings.cancel,
-                  onPressed: () => Navigator.pop(context),
-                  type: CommonButtonType.transparent,
-                ),
-                CommonButton(
-                  label: _isEditing ? AppStrings.update : AppStrings.save,
-                  onPressed:
-                      (tempName.isEmpty || errorText != null)
-                          ? null
-                          : () async {
-                            try {
-                              final position = FingerPosition(
-                                thumb: _fingerStates[0],
-                                index: _fingerStates[1],
-                                middle: _fingerStates[2],
-                                ring: _fingerStates[3],
-                                pinky: _fingerStates[4],
-                              );
-
-                              final template = MotionTemplate(
-                                id:
-                                    _isEditing
-                                        ? _editingTemplate!.id
-                                        : 'custom_${DateTime.now().millisecondsSinceEpoch}',
-                                name: tempName,
-                                positions: [position],
-                                createdAt:
-                                    _isEditing
-                                        ? _editingTemplate!.createdAt
-                                        : DateTime.now(),
-                              );
-
-                              await storageService.saveTemplate(template);
-                              Navigator.pop(context);
-
-                              context.showSuccessMessage(
-                                _isEditing
-                                    ? '動作 "$tempName" 已更新'
-                                    : '動作 "$tempName" 已儲存',
-                              );
-
-                              if (_isEditing) {
-                                setState(() {
-                                  _motionName = tempName;
-                                });
-                                widget.onEditComplete?.call();
-                                _resetToDefault();
-                              } else {
-                                _resetToDefault();
-                              }
-                            } catch (e) {
-                              Navigator.pop(context);
-                              context.showErrorMessage('儲存失敗: $e');
-                            }
-                          },
-                  type: CommonButtonType.solid,
-                  shape: CommonButtonShape.capsule,
-                  color:
-                      _isEditing
-                          ? AppColors.button(context, Colors.orange)
-                          : AppColors.blueButton(context), // 使用專門的藍色按鈕顏色
-                  textColor: Colors.white,
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder:
+          (context) => SaveMotionDialog(
+            isEditing: _isEditing,
+            editingTemplate: _editingTemplate,
+            fingerStates: _fingerStates,
+            onSaveComplete: () {
+              if (_isEditing) {
+                widget.onEditComplete?.call();
+              }
+              _resetToDefault();
+            },
+          ),
     );
   }
 
@@ -250,7 +130,6 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
       builder: (context, constraints) {
         final isCompact =
             constraints.maxHeight < AppConstants.compactHeightBreakpoint;
-        final screenWidth = constraints.maxWidth;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -322,81 +201,21 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                 isCompact: isCompact,
               ),
               const SizedBox(height: 16),
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child:
-                      screenWidth > AppConstants.tabletBreakpoint
-                          ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: _buildControlButtons(isConnected),
-                          )
-                          : Column(
-                            children:
-                                _buildControlButtons(isConnected)
-                                    .map(
-                                      (btn) => Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 4,
-                                        ),
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          child: btn,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                          ),
-                ),
+              CustomMotionControls(
+                isEditing: _isEditing,
+                isConnected: isConnected,
+                onSaveMotion: _saveMotion,
+                onExecuteMotion: _executeMotion,
+                onReset: () {
+                  setState(() {
+                    _fingerStates.fillRange(0, 5, FingerState.relaxed);
+                  });
+                },
               ),
             ],
           ),
         );
       },
     );
-  }
-
-  List<Widget> _buildControlButtons(bool isConnected) {
-    return [
-      CommonButton(
-        label: _isEditing ? '更新動作' : '儲存動作',
-        onPressed: _saveMotion,
-        type: CommonButtonType.solid,
-        shape: CommonButtonShape.capsule,
-        color:
-            _isEditing
-                ? AppColors.button(context, Colors.orange)
-                : AppColors.blueButton(context), // 使用專門的藍色按鈕顏色
-        textColor: Colors.white,
-        icon: _isEditing ? Icons.update : Icons.save,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      ),
-      Tooltip(
-        message: isConnected ? '發送動作指令' : AppStrings.bluetoothNotConnected,
-        child: CommonButton(
-          label: '執行動作',
-          onPressed: isConnected ? _executeMotion : null,
-          type: CommonButtonType.solid,
-          shape: CommonButtonShape.capsule,
-          color: isConnected ? AppColors.success : Colors.grey.shade300,
-          textColor: Colors.white,
-          icon: Icons.play_arrow,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-      ),
-      CommonButton(
-        label: AppStrings.reset,
-        onPressed: () {
-          setState(() {
-            _fingerStates.fillRange(0, 5, FingerState.relaxed);
-          });
-        },
-        type: CommonButtonType.transparent,
-        shape: CommonButtonShape.capsule,
-        textColor: Colors.red,
-        icon: Icons.refresh,
-      ),
-    ];
   }
 }

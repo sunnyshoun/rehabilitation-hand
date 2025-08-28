@@ -10,14 +10,12 @@ import 'package:rehabilitation_hand/config/themes.dart';
 class MotionLibrarySection extends StatefulWidget {
   final Function(MotionTemplate) onAddToSequence;
   final Function(String)? onEditTemplate;
-  final Function(MotionTemplate, MotionStorageService) onDeleteTemplate;
   final Function(GlobalKey, MotionTemplate) onShowActions;
 
   const MotionLibrarySection({
     super.key,
     required this.onAddToSequence,
     this.onEditTemplate,
-    required this.onDeleteTemplate,
     required this.onShowActions,
   });
 
