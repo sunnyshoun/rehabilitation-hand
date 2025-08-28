@@ -121,7 +121,7 @@ class ThemeService extends ChangeNotifier {
       case AppThemeMode.light:
         return Icons.brightness_high;
       case AppThemeMode.dark:
-        return Icons.brightness_low;
+        return Icons.brightness_2;
     }
   }
 }

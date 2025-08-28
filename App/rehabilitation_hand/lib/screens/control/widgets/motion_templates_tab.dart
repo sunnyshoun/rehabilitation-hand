@@ -1018,63 +1018,6 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
     );
   }
 
-  Widget _buildPlayControls() {
-    if (!_isPlaying) {
-      return ElevatedButton.icon(
-        onPressed: _sequence.isEmpty ? null : _executeSequence,
-        icon: const Icon(Icons.play_arrow, size: 16),
-        label: const Text('播放'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _sequence.isNotEmpty ? Colors.green : null,
-          foregroundColor: _sequence.isNotEmpty ? Colors.white : null,
-        ),
-      );
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          onPressed: _previousMotion,
-          icon: const Icon(Icons.skip_previous),
-          tooltip: '上一個',
-          constraints: const BoxConstraints(minWidth: 32),
-          padding: const EdgeInsets.all(4),
-        ),
-        if (_isPaused)
-          IconButton(
-            onPressed: _resumePlaying,
-            icon: const Icon(Icons.play_arrow),
-            tooltip: '繼續',
-            constraints: const BoxConstraints(minWidth: 32),
-            padding: const EdgeInsets.all(4),
-          )
-        else
-          IconButton(
-            onPressed: _pausePlaying,
-            icon: const Icon(Icons.pause),
-            tooltip: '暫停',
-            constraints: const BoxConstraints(minWidth: 32),
-            padding: const EdgeInsets.all(4),
-          ),
-        IconButton(
-          onPressed: _stopPlaying,
-          icon: const Icon(Icons.stop, color: Colors.red),
-          tooltip: '停止',
-          constraints: const BoxConstraints(minWidth: 32),
-          padding: const EdgeInsets.all(4),
-        ),
-        IconButton(
-          onPressed: _nextMotion,
-          icon: const Icon(Icons.skip_next),
-          tooltip: '下一個',
-          constraints: const BoxConstraints(minWidth: 32),
-          padding: const EdgeInsets.all(4),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);

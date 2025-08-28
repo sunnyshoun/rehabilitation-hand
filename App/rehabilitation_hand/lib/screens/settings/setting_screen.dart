@@ -8,60 +8,77 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   void _showThemeModeDialog(BuildContext context) {
-    final themeService = Provider.of<ThemeService>(context, listen: false);
-    
+    Provider.of<ThemeService>(context, listen: false);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.palette, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('選擇主題'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ThemeService.availableThemeModes.map((mode) {
-            return Consumer<ThemeService>(
-              builder: (context, service, _) {
-                final isSelected = service.themeMode == mode;
-                return ListTile(
-                  leading: Icon(
-                    ThemeService.getThemeModeIcon(mode),
-                    color: isSelected ? Theme.of(context).primaryColor : null,
-                  ),
-                  title: Text(
-                    ThemeService.getThemeModeDisplayName(mode),
-                    style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Theme.of(context).primaryColor : null,
-                    ),
-                  ),
-                  trailing: isSelected 
-                    ? Icon(Icons.check, color: Theme.of(context).primaryColor)
-                    : null,
-                  onTap: () {
-                    service.setThemeMode(mode);
-                    Navigator.of(context).pop();
-                  },
-                  selected: isSelected,
-                  selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                );
-              },
-            );
-          }).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('完成'),
+      builder:
+          (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.palette, color: Colors.blue),
+                SizedBox(width: 8),
+                Text('選擇主題'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  ThemeService.availableThemeModes.map((mode) {
+                    return Consumer<ThemeService>(
+                      builder: (context, service, _) {
+                        final isSelected = service.themeMode == mode;
+                        return ListTile(
+                          leading: Icon(
+                            ThemeService.getThemeModeIcon(mode),
+                            color:
+                                isSelected
+                                    ? Theme.of(context).primaryColor
+                                    : null,
+                          ),
+                          title: Text(
+                            ThemeService.getThemeModeDisplayName(mode),
+                            style: TextStyle(
+                              fontWeight:
+                                  isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                              color:
+                                  isSelected
+                                      ? Theme.of(context).primaryColor
+                                      : null,
+                            ),
+                          ),
+                          trailing:
+                              isSelected
+                                  ? Icon(
+                                    Icons.check,
+                                    color: Theme.of(context).primaryColor,
+                                  )
+                                  : null,
+                          onTap: () {
+                            service.setThemeMode(mode);
+                            Navigator.of(context).pop();
+                          },
+                          selected: isSelected,
+                          selectedTileColor: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('完成'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -125,7 +142,9 @@ class SettingsScreen extends StatelessWidget {
                 Consumer<ThemeService>(
                   builder: (context, themeService, _) {
                     return SettingsTile(
-                      icon: ThemeService.getThemeModeIcon(themeService.themeMode),
+                      icon: ThemeService.getThemeModeIcon(
+                        themeService.themeMode,
+                      ),
                       title: '主題模式',
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -133,7 +152,8 @@ class SettingsScreen extends StatelessWidget {
                           Text(
                             themeService.themeModeDisplayName,
                             style: TextStyle(
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
                               fontSize: 14,
                             ),
                           ),
@@ -171,20 +191,21 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('確認登出'),
-                    content: const Text('確定要登出嗎？'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('取消'),
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text('確認登出'),
+                        content: const Text('確定要登出嗎？'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('取消'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('登出'),
+                          ),
+                        ],
                       ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('登出'),
-                      ),
-                    ],
-                  ),
                 );
 
                 if (confirm == true) {
