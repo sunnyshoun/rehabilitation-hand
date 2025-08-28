@@ -15,11 +15,16 @@ class PresetButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         shape: const StadiumBorder(),
-        side: BorderSide(color: buttonColor, width: 2), // 使用主題顏色
+        side: BorderSide(color: buttonColor, width: 2),
         foregroundColor: buttonColor,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        minimumSize: const Size(0, 28), // 設置最小高度
       ),
-      child: Text(label, style: const TextStyle(fontSize: 12)),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 11),
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 }

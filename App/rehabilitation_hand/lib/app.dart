@@ -5,6 +5,7 @@ import 'services/theme_service.dart';
 import 'services/auth_service.dart';
 import 'services/bluetooth_service.dart';
 import 'services/motion_storage_service.dart';
+import 'services/language_service.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/login/login_screen.dart';
 
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => BluetoothService()),
         ChangeNotifierProvider(create: (_) => MotionStorageService()),
+        ChangeNotifierProvider(create: (_) => LanguageService()),
       ],
       child: Consumer<ThemeService>(
         builder: (context, themeService, _) {

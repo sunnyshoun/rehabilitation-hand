@@ -31,26 +31,36 @@ class FingerControlCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '手指控制',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    '手指控制',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    PresetButton(
-                      label: '全部放鬆',
-                      onPressed: () => onPresetPressed('relax'),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        PresetButton(
+                          label: '放鬆',
+                          onPressed: () => onPresetPressed('relax'),
+                        ),
+                        const SizedBox(width: 4),
+                        PresetButton(
+                          label: AppStrings.fistMotion,
+                          onPressed: () => onPresetPressed('fist'),
+                        ),
+                        const SizedBox(width: 4),
+                        PresetButton(
+                          label: AppStrings.openMotion,
+                          onPressed: () => onPresetPressed('open'),
+                        ),
+                      ],
                     ),
-                    PresetButton(
-                      label: AppStrings.fistMotion,
-                      onPressed: () => onPresetPressed('fist'),
-                    ),
-                    PresetButton(
-                      label: AppStrings.openMotion,
-                      onPressed: () => onPresetPressed('open'),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),

@@ -315,31 +315,52 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                     ),
                                     child: ListTile(
                                       leading: CircleAvatar(
-                                        backgroundColor:
-                                            isCurrentPlaying
-                                                ? Colors.green
-                                                : null,
-                                        child: Text(
-                                          '${index + 1}',
-                                          style: TextStyle(
-                                            color:
-                                                isCurrentPlaying
-                                                    ? Colors.white
-                                                    : null,
+                                        child: Text('${index + 1}'),
+                                      ),
+                                      title: Text(template.name),
+                                      subtitle: Container(
+                                        alignment: Alignment.centerLeft,
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<int>(
+                                            value: _durations[index],
+                                            isDense: true,
+                                            items:
+                                                List.generate(10, (i) => i + 1)
+                                                    .map(
+                                                      (sec) => DropdownMenuItem(
+                                                        value: sec,
+                                                        child: Text(
+                                                          '持續: $sec 秒',
+                                                          style: const TextStyle(
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                            onChanged: (value) {
+                                              if (value != null) {
+                                                setDialogState(
+                                                  () =>
+                                                      _durations[index] = value,
+                                                );
+                                              }
+                                            },
                                           ),
                                         ),
                                       ),
-                                      title: Text(template.name),
-                                      subtitle: Text(
-                                        '持續: ${_durations[index]} 秒',
+                                      trailing: IconButton(
+                                        icon: const Icon(
+                                          Icons.remove_circle_outline,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          setDialogState(() {
+                                            _sequence.removeAt(index);
+                                            _durations.removeAt(index);
+                                          });
+                                        },
                                       ),
-                                      trailing:
-                                          isCurrentPlaying
-                                              ? const Icon(
-                                                Icons.play_arrow,
-                                                color: Colors.green,
-                                              )
-                                              : null,
                                     ),
                                   );
                                 },

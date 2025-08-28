@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rehabilitation_hand/services/auth_service.dart';
 import 'package:rehabilitation_hand/services/theme_service.dart';
+import 'package:rehabilitation_hand/services/language_service.dart';
 import 'package:rehabilitation_hand/widgets/common/common_button.dart';
 import 'widgets/settings_tile.dart';
 
@@ -91,6 +92,89 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  void _showLanguageDialog(BuildContext context) {
+    Provider.of<LanguageService>(context, listen: false);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.language, color: Colors.blue),
+                SizedBox(width: 8),
+                Text('選擇語言'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  LanguageService.availableLanguages.map((language) {
+                    return Consumer<LanguageService>(
+                      builder: (context, service, _) {
+                        final isSelected = service.currentLanguage == language;
+                        return ListTile(
+                          leading: Icon(
+                            LanguageService.getLanguageIcon(language),
+                            color:
+                                isSelected
+                                    ? Theme.of(context).primaryColor
+                                    : null,
+                          ),
+                          title: Text(
+                            LanguageService.getLanguageDisplayName(language),
+                            style: TextStyle(
+                              fontWeight:
+                                  isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                              color:
+                                  isSelected
+                                      ? Theme.of(context).primaryColor
+                                      : null,
+                            ),
+                          ),
+                          trailing:
+                              isSelected
+                                  ? Icon(
+                                    Icons.check,
+                                    color: Theme.of(context).primaryColor,
+                                  )
+                                  : null,
+                          onTap: () {
+                            service.setLanguage(language);
+                            Navigator.of(context).pop();
+                          },
+                          selected: isSelected,
+                          selectedTileColor: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+            ),
+            actions: [
+              CommonButton(
+                label: '完成',
+                onPressed: () => Navigator.of(context).pop(),
+                type: CommonButtonType.solid,
+                shape: CommonButtonShape.capsule,
+                color: Theme.of(context).primaryColor,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthService>(context);
@@ -130,22 +214,31 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 const Divider(height: 1),
-                SettingsTile(
-                  icon: Icons.language,
-                  title: '語言',
-                  trailing: DropdownButton<String>(
-                    value: '繁體中文',
-                    items: const [
-                      DropdownMenuItem(value: '繁體中文', child: Text('繁體中文')),
-                      DropdownMenuItem(
-                        value: 'English',
-                        child: Text('English'),
+                Consumer<LanguageService>(
+                  builder: (context, languageService, _) {
+                    return SettingsTile(
+                      icon: Icons.language,
+                      title: '語言',
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            LanguageService.getLanguageDisplayName(
+                              languageService.currentLanguage,
+                            ),
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_ios, size: 16),
+                        ],
                       ),
-                    ],
-                    onChanged: (value) {
-                      // TODO: 更新語言設定
-                    },
-                  ),
+                      onTap: () => _showLanguageDialog(context),
+                    );
+                  },
                 ),
                 const Divider(height: 1),
                 Consumer<ThemeService>(

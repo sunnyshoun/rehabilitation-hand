@@ -1,32 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // 層級：最深背景 → 中層區塊 → 卡片/元件 → 前景/強調色
-  static const Color darkBackground = Color(0xFF121212); // 最深
-  static const Color darkSectionBackground = Color.fromARGB(
-    255,
-    22,
-    25,
-    29,
-  ); // 中間
-  static const Color darkSection = Color(0xFF21252A); // 中間
-  static const Color darkCard = Color(0xFF2D3137); // 最淺前景
-  static const Color darkSlider = Color(0xFF2D3137); // 最淺前景
-  static const Color darkPrimary = Color(0xFF448AFF);
-  static const Color darkDivider = Color(0xFF33373D);
+  // 暗色模式配色 - 更現代化的深色主題
+  static const Color darkBackground = Color(0xFF0F1419); // 更深邃的背景
+  static const Color darkSectionBackground = Color(0xFF1A1F28); // 區塊背景
+  static const Color darkSection = Color(0xFF242B37); // 卡片容器
+  static const Color darkCard = Color(0xFF2E3543); // 卡片元件
+  static const Color darkSlider = Color(0xFF3A4252); // 滑桿背景
+  static const Color darkPrimary = Color(0xFF60A5FA); // 更柔和的藍色
+  static const Color darkDivider = Color(0xFF3A4252); // 分隔線
 
-  static const Color lightBackground = Colors.white;
-  static const Color lightSectionBackground = Color.fromARGB(
-    255,
-    255,
-    255,
-    255,
-  );
-  static const Color lightSection = Color(0xFFF4F6F8);
-  static const Color lightCard = Colors.white;
-  static const Color lightSlider = Color.fromARGB(255, 224, 224, 224);
-  static const Color lightPrimary = Colors.blue;
-  static const Color lightDivider = Color(0xFFE0E0E0);
+  // 亮色模式配色 - 更柔和的淺色主題
+  static const Color lightBackground = Color(0xFFFAFBFC); // 微灰白背景
+  static const Color lightSectionBackground = Color(0xFFF5F7FA); // 區塊背景
+  static const Color lightSection = Color(0xFFEDF1F6); // 卡片容器
+  static const Color lightCard = Colors.white; // 卡片元件
+  static const Color lightSlider = Color(0xFFE1E6ED); // 滑桿背景
+  static const Color lightPrimary = Color(0xFF3B82F6); // 更鮮明的藍色
+  static const Color lightDivider = Color(0xFFE1E6ED); // 分隔線
 
   static Color background(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
