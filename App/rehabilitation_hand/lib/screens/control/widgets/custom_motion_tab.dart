@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rehabilitation_hand/widgets/common/common_button.dart';
 import 'package:rehabilitation_hand/models/motion_model.dart';
 import 'package:rehabilitation_hand/services/bluetooth_service.dart';
 import 'package:rehabilitation_hand/services/motion_storage_service.dart';
@@ -159,11 +160,13 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                 ],
               ),
               actions: [
-                TextButton(
+                CommonButton(
+                  label: AppStrings.cancel,
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(AppStrings.cancel),
+                  type: CommonButtonType.transparent,
                 ),
-                ElevatedButton(
+                CommonButton(
+                  label: _isEditing ? AppStrings.update : AppStrings.save,
                   onPressed:
                       (tempName.isEmpty || errorText != null)
                           ? null
@@ -213,7 +216,13 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                               context.showErrorMessage('儲存失敗: $e');
                             }
                           },
-                  child: Text(_isEditing ? AppStrings.update : AppStrings.save),
+                  type: CommonButtonType.solid,
+                  shape: CommonButtonShape.capsule,
+                  color:
+                      _isEditing
+                          ? Colors.orange
+                          : Theme.of(context).primaryColor,
+                  textColor: Colors.white,
                 ),
               ],
             );
@@ -335,40 +344,40 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
 
   List<Widget> _buildControlButtons(bool isConnected) {
     return [
-      ElevatedButton.icon(
+      CommonButton(
+        label: _isEditing ? '更新動作' : '儲存動作',
         onPressed: _saveMotion,
-        icon: Icon(_isEditing ? Icons.update : Icons.save),
-        label: Text(_isEditing ? '更新動作' : '儲存動作'),
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          backgroundColor: _isEditing ? Colors.orange : null,
-        ),
+        type: CommonButtonType.solid,
+        shape: CommonButtonShape.capsule,
+        color: _isEditing ? Colors.orange : Theme.of(context).primaryColor,
+        textColor: Colors.white,
+        icon: Icon(_isEditing ? Icons.update : Icons.save, color: Colors.white),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
       Tooltip(
         message: isConnected ? '發送動作指令' : AppStrings.bluetoothNotConnected,
-        child: ElevatedButton.icon(
+        child: CommonButton(
+          label: '執行動作',
           onPressed: isConnected ? _executeMotion : null,
-          icon: const Icon(Icons.play_arrow),
-          label: const Text('執行動作'),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            backgroundColor: isConnected ? AppColors.connectedColor : null,
-            foregroundColor: isConnected ? Colors.white : null,
-            disabledBackgroundColor: Colors.grey.shade300,
-          ),
+          type: CommonButtonType.solid,
+          shape: CommonButtonShape.capsule,
+          color: isConnected ? AppColors.connectedColor : Colors.grey.shade300,
+          textColor: Colors.white,
+          icon: const Icon(Icons.play_arrow, color: Colors.white),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
-      TextButton.icon(
+      CommonButton(
+        label: AppStrings.reset,
         onPressed: () {
           setState(() {
             _fingerStates.fillRange(0, 5, FingerState.relaxed);
           });
         },
-        icon: const Icon(Icons.refresh),
-        label: const Text(AppStrings.reset),
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.red, // 文字與圖示皆為紅色
-        ),
+        type: CommonButtonType.transparent,
+        shape: CommonButtonShape.capsule,
+        textColor: Colors.red,
+        icon: const Icon(Icons.refresh, color: Colors.red),
       ),
     ];
   }

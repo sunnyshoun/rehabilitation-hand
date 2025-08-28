@@ -6,6 +6,7 @@ import 'package:rehabilitation_hand/services/bluetooth_service.dart';
 import 'package:rehabilitation_hand/services/motion_storage_service.dart';
 import 'package:rehabilitation_hand/widgets/common/top_snackbar.dart';
 import 'package:rehabilitation_hand/widgets/motion/motion_library.dart';
+import 'package:rehabilitation_hand/widgets/common/common_button.dart';
 
 class MotionTemplatesTab extends StatefulWidget {
   final Function(String)? onEditTemplate;
@@ -172,7 +173,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                 onPressed: () => Navigator.pop(context),
                 child: const Text('取消'),
               ),
-              ElevatedButton(
+              CommonButton(
+                label: '清除',
                 onPressed: () {
                   setState(() {
                     _sequence.clear();
@@ -181,8 +183,14 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                   Navigator.pop(context);
                   showTopSnackBar(context, '序列已清空');
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('清除', style: TextStyle(color: Colors.white)),
+                type: CommonButtonType.solid,
+                shape: CommonButtonShape.capsule,
+                color: Colors.red,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
               ),
             ],
           ),
@@ -202,15 +210,20 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                 children: [
                   const Text('序列內容'),
                   if (!_isPlaying)
-                    TextButton.icon(
+                    CommonButton(
+                      label: '清除全部',
                       onPressed: () {
                         Navigator.pop(context);
                         _clearSequence();
                       },
+                      type: CommonButtonType.outline,
+                      shape: CommonButtonShape.capsule,
+                      color: Colors.red,
+                      textColor: Colors.red,
                       icon: const Icon(Icons.clear_all, color: Colors.red),
-                      label: const Text(
-                        '清除全部',
-                        style: TextStyle(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
                     ),
                 ],
@@ -658,6 +671,24 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                   itemCount: playlists.length,
                                   itemBuilder: (context, index) {
                                     final playlist = playlists[index];
+                                    // 取得目前所有存在的模板
+                                    final storageService =
+                                        Provider.of<MotionStorageService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    final validCount =
+                                        playlist.items
+                                            .where(
+                                              (item) =>
+                                                  storageService
+                                                      .getTemplateById(
+                                                        item.templateId,
+                                                      ) !=
+                                                  null,
+                                            )
+                                            .length;
+
                                     return Card(
                                       key: ValueKey(playlist.id),
                                       margin: const EdgeInsets.symmetric(
@@ -666,9 +697,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                       ),
                                       child: ListTile(
                                         title: Text(playlist.name),
-                                        subtitle: Text(
-                                          '${playlist.items.length} 個動作',
-                                        ),
+                                        subtitle: Text('$validCount 個動作'),
                                         leading: const Icon(
                                           Icons.playlist_play_rounded,
                                         ),
@@ -747,10 +776,17 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('取消'),
               ),
-              ElevatedButton(
+              CommonButton(
+                label: '刪除',
                 onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('刪除', style: TextStyle(color: Colors.white)),
+                type: CommonButtonType.solid,
+                shape: CommonButtonShape.capsule,
+                color: Colors.red,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
               ),
             ],
           ),
@@ -790,10 +826,17 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('取消'),
               ),
-              ElevatedButton(
+              CommonButton(
+                label: '刪除',
                 onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('刪除', style: TextStyle(color: Colors.white)),
+                type: CommonButtonType.solid,
+                shape: CommonButtonShape.capsule,
+                color: Colors.red,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
               ),
             ],
           ),
@@ -1048,7 +1091,29 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      trailing: isConnected ? _buildPlayControls() : null,
+                      trailing: CommonButton(
+                        label: '播放',
+                        icon: const Icon(
+                          Icons.play_arrow,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        onPressed:
+                            (isConnected && _sequence.isNotEmpty)
+                                ? _executeSequence
+                                : null,
+                        type: CommonButtonType.solid,
+                        shape: CommonButtonShape.capsule,
+                        color:
+                            (isConnected && _sequence.isNotEmpty)
+                                ? Colors.green
+                                : Colors.grey.shade300,
+                        textColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
