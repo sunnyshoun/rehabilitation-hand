@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_getTitle()),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // 不設置 backgroundColor，讓主題自動處理
         actions: [
           if (_selectedIndex == 1)
             Padding(

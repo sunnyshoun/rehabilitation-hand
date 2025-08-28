@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rehabilitation_hand/config/themes.dart';
 
 class PresetButton extends StatelessWidget {
   final String label;
@@ -8,12 +9,14 @@ class PresetButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final buttonColor = AppColors.getButtonColor(context, Colors.deepPurple);
+
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         shape: const StadiumBorder(),
-        side: const BorderSide(color: Colors.deepPurple, width: 2), // 外框顏色與粗細
-        foregroundColor: Colors.deepPurple,
+        side: BorderSide(color: buttonColor, width: 2), // 使用主題顏色
+        foregroundColor: buttonColor,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
       child: Text(label, style: const TextStyle(fontSize: 12)),

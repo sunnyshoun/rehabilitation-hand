@@ -63,8 +63,8 @@ class _TemplateCardState extends State<TemplateCard>
   Widget build(BuildContext context) {
     final Color baseColor =
         widget.isCustom
-            ? AppColors.customTemplateColor
-            : AppColors.defaultTemplateColor;
+            ? AppColors.customTemplateColor(context)
+            : AppColors.defaultTemplateColor(context);
     final Color splashColor =
         widget.isCustom ? Colors.purple.shade100 : Colors.blue.shade100;
     final Color highlightColor =

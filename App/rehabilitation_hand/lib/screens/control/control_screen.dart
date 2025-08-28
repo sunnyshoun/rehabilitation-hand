@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rehabilitation_hand/services/bluetooth_service.dart';
+import 'package:rehabilitation_hand/config/themes.dart';
 import 'widgets/motion_templates_tab.dart';
 import 'widgets/custom_motion_tab.dart';
 
@@ -67,10 +68,19 @@ class _ControlScreenState extends State<ControlScreen>
     return Column(
       children: [
         Container(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: AppColors.getAppBackground(context), // 分頁背景使用最深的背景色（900）
           child: TabBar(
             controller: _tabController,
             tabs: const [Tab(text: '動作模板'), Tab(text: '自訂動作')],
+            indicatorColor: Theme.of(context).primaryColor,
+            labelColor:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Theme.of(context).primaryColor,
+            unselectedLabelColor:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey.shade400
+                    : Colors.grey.shade600,
           ),
         ),
         Expanded(

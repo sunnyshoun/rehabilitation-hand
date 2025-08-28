@@ -33,7 +33,6 @@ class AppThemes {
         primarySwatch: Colors.blue,
         brightness: Brightness.light,
       ),
-      // 自定義過渡動畫時間
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -51,7 +50,7 @@ class AppThemes {
       cardTheme: CardThemeData(
         elevation: AppConstants.cardElevation,
         margin: const EdgeInsets.symmetric(vertical: 4),
-        color: Colors.grey[850], // 深色模式下的卡片顏色
+        color: Colors.grey.shade700, // 深色模式下的卡片顏色，比背景更深
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -76,16 +75,17 @@ class AppThemes {
         primarySwatch: Colors.blue,
         brightness: Brightness.dark,
       ).copyWith(
-        surface: Colors.grey[900],
+        surface: Colors.grey[850],
         onSurface: Colors.grey[100],
-        background: Colors.black,
-        onBackground: Colors.grey[100],
+        surfaceContainerHighest: Colors.grey[800], // 用於對話框等
+        surfaceContainer: Colors.grey[850], // 用於卡片等
       ),
       // 深色模式下的 AppBar 主題
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[850],
+        backgroundColor: Colors.grey[900], // 更深的背景色
         foregroundColor: Colors.white,
         elevation: 2,
+        surfaceTintColor: Colors.transparent, // 移除 Material 3 的表面著色
       ),
       // 深色模式下的底部導航欄
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
@@ -93,7 +93,16 @@ class AppThemes {
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey[400],
       ),
-      // 自定義過渡動畫時間
+      // 深色模式下的對話框主題
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.grey.shade700, // 對話框背景使用較深的顏色
+        surfaceTintColor: Colors.transparent,
+      ),
+      // 深色模式下的底部彈窗主題
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: Colors.grey.shade700, // 底部彈窗背景使用較深的顏色
+        surfaceTintColor: Colors.transparent,
+      ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -114,9 +123,60 @@ class AppColors {
   static const Color connectedColor = Colors.green;
   static const Color disconnectedColor = Colors.orange;
 
-  // 元件顏色
-  static const Color customTemplateColor = Colors.purple;
-  static const Color defaultTemplateColor = Colors.blue;
+  // 元件顏色 - 根據主題調整
+  static Color customTemplateColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.purple.shade300 // 深色模式下使用較淺的顏色
+        : Colors.purple;
+  }
+
+  static Color defaultTemplateColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.blue.shade300 // 深色模式下使用較淺的顏色
+        : Colors.blue;
+  }
+
+  // 按鈕顏色 - 根據主題調整
+  static Color getButtonColor(BuildContext context, Color baseColor) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color.lerp(baseColor, Colors.white, 0.3)! // 深色模式下混合白色使其變淺
+        : baseColor;
+  }
+
+  // 專門的藍色按鈕顏色 - 深色模式下使用較暗的藍色
+  static Color getBlueButtonColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.blue.shade600 // 深色模式下使用較暗的藍色
+        : Colors.blue;
+  }
+
+  // 手指滑桿背景顏色
+  static Color getSliderBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey.shade700 // 深色模式下使用 700（前景元件）
+        : Colors.grey.shade300;
+  }
+
+  // Section 背景顏色 - 中等層次
+  static Color getSectionBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey.shade800 // 深色模式下使用 800（中等背景）
+        : Colors.grey.shade100; // 亮色模式下使用淺灰色
+  }
+
+  // 卡片和元件的背景顏色 - 最淺的前景
+  static Color getCardBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey.shade700 // 深色模式下使用 700（最淺前景）
+        : Colors.white; // 亮色模式下保持白色
+  }
+
+  // APP 背景顏色 - 最深的背景
+  static Color getAppBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey.shade900 // 深色模式下使用 900（最深背景）
+        : Colors.white; // 亮色模式下保持白色
+  }
 
   // 背景顏色 (亮色模式)
   static final Color lightInfoBackground = Colors.blue.shade50;
@@ -129,6 +189,11 @@ class AppColors {
   static final Color darkWarningBackground = Colors.orange.shade900.withOpacity(0.3);
   static final Color darkSuccessBackground = Colors.green.shade900.withOpacity(0.3);
   static final Color darkErrorBackground = Colors.red.shade900.withOpacity(0.3);
+
+  // 已廢棄的方法 - 請使用上面的新方法
+  // getIndicatorBackground -> getSectionBackground  
+  // getPlaylistBackground -> getSectionBackground
+  // getLibraryBackground -> getSectionBackground
 
   // 根據主題取得背景顏色的方法
   static Color getInfoBackground(BuildContext context) {
@@ -179,4 +244,8 @@ class AppColors {
         ? Colors.red.shade200
         : Colors.red.shade700;
   }
+
+  // 保持向後兼容的靜態顏色
+  static const Color customTemplateColorStatic = Colors.purple;
+  static const Color defaultTemplateColorStatic = Colors.blue;
 }

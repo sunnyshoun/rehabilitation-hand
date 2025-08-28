@@ -7,7 +7,7 @@ import 'package:rehabilitation_hand/services/motion_storage_service.dart';
 import 'package:rehabilitation_hand/core/extensions/context_extensions.dart';
 import 'package:rehabilitation_hand/config/constants.dart';
 import 'package:rehabilitation_hand/config/themes.dart';
-import 'finger_control_card.dart';
+import 'package:rehabilitation_hand/screens/control/widgets/finger_control_card.dart';
 
 class CustomMotionTab extends StatefulWidget {
   final String? editingTemplateId;
@@ -128,13 +128,21 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                       labelText: '動作名稱',
                       floatingLabelBehavior:
                           FloatingLabelBehavior.always, // 標籤永遠浮在外框上
-                      labelStyle: TextStyle(color: Colors.blue), // 標籤顏色
+                      labelStyle: TextStyle(
+                        color: AppColors.getInfoTextColor(context)
+                      ), // 使用主題顏色
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2),
+                        borderSide: BorderSide(
+                          color: AppColors.getInfoTextColor(context), 
+                          width: 2
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2),
+                        borderSide: BorderSide(
+                          color: AppColors.getInfoTextColor(context), 
+                          width: 2
+                        ),
                       ),
                       errorText: errorText,
                     ),
@@ -220,8 +228,8 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                   shape: CommonButtonShape.capsule,
                   color:
                       _isEditing
-                          ? Colors.orange
-                          : Theme.of(context).primaryColor,
+                          ? AppColors.getButtonColor(context, Colors.orange)
+                          : AppColors.getBlueButtonColor(context), // 使用專門的藍色按鈕顏色
                   textColor: Colors.white,
                 ),
               ],
@@ -252,15 +260,12 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.getInfoBackground(context), // 自適應顏色
+                    color: AppColors.getSectionBackground(context), // 使用 section 背景（800）
                     borderRadius: BorderRadius.circular(
                       AppConstants.borderRadius,
                     ),
                     border: Border.all(
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Colors.blue.shade600
-                              : Colors.blue.shade200,
+                      color: AppColors.getInfoTextColor(context).withOpacity(0.5),
                     ),
                   ),
                   child: Row(
@@ -360,7 +365,9 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
         onPressed: _saveMotion,
         type: CommonButtonType.solid,
         shape: CommonButtonShape.capsule,
-        color: _isEditing ? Colors.orange : Theme.of(context).primaryColor,
+        color: _isEditing 
+            ? AppColors.getButtonColor(context, Colors.orange) 
+            : AppColors.getBlueButtonColor(context), // 使用專門的藍色按鈕顏色
         textColor: Colors.white,
         icon: _isEditing ? Icons.update : Icons.save,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -372,7 +379,9 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
           onPressed: isConnected ? _executeMotion : null,
           type: CommonButtonType.solid,
           shape: CommonButtonShape.capsule,
-          color: isConnected ? AppColors.connectedColor : Colors.grey.shade300,
+          color: isConnected 
+              ? AppColors.connectedColor 
+              : Colors.grey.shade300,
           textColor: Colors.white,
           icon: Icons.play_arrow,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

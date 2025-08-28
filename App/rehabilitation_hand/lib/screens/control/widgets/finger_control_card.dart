@@ -57,7 +57,7 @@ class FingerControlCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            _buildStateIndicators(),
+            _buildStateIndicators(context),
             const SizedBox(height: 20),
             SizedBox(
               height: isCompact ? 250 : 350,
@@ -86,11 +86,11 @@ class FingerControlCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStateIndicators() {
+  Widget _buildStateIndicators(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: AppColors.getSectionBackground(context), // section 保持相對淺色
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
       ),
       child: Row(
