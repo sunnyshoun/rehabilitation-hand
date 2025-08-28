@@ -8,7 +8,6 @@ import 'package:rehabilitation_hand/widgets/common/top_snackbar.dart';
 import 'package:rehabilitation_hand/widgets/motion/motion_library.dart';
 import 'package:rehabilitation_hand/widgets/common/common_button.dart';
 import 'package:rehabilitation_hand/config/themes.dart';
-import 'package:rehabilitation_hand/config/constants.dart';
 
 class MotionTemplatesTab extends StatefulWidget {
   final Function(String)? onEditTemplate;
@@ -58,7 +57,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
     showTopSnackBar(
       context,
       '"${template.name}" 已加入序列',
-      backgroundColor: AppColors.getBlueButtonColor(context), // 使用統一的藍色
+      backgroundColor: AppColors.blueButton(context), // 使用統一的藍色
       icon: Icons.add_circle_outline,
     );
   }
@@ -239,7 +238,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.getCardBackground(context), // 使用卡片背景顏色
+                        color: AppColors.background(context), // 使用卡片背景顏色
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -257,9 +256,12 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                         margin: const EdgeInsets.only(top: 8),
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.getSectionBackground(context) // 深色模式使用 section 背景（800）
-                              : Colors.blue.shade100,
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.section(
+                                    context,
+                                  ) // 深色模式使用 section 背景（800）
+                                  : Colors.blue.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -274,9 +276,11 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                             Text(
                               '正在播放: ${_currentPlayingIndex + 1} / ${_sequence.length}',
                               style: TextStyle(
-                                color: Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.blue.shade300
-                                    : Colors.blue.shade700,
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.blue.shade300
+                                        : Colors.blue.shade700,
                               ),
                             ),
                           ],
@@ -297,10 +301,16 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                   return Card(
                                     color:
                                         isCurrentPlaying
-                                            ? (Theme.of(context).brightness == Brightness.dark
-                                                ? Colors.green.shade700.withOpacity(0.6) // 使用 700 系列的綠色
+                                            ? (Theme.of(context).brightness ==
+                                                    Brightness.dark
+                                                ? Colors.green.shade700
+                                                    .withOpacity(
+                                                      0.6,
+                                                    ) // 使用 700 系列的綠色
                                                 : Colors.green.shade100)
-                                            : AppColors.getCardBackground(context), // 普通卡片使用卡片背景（700）
+                                            : AppColors.background(
+                                              context,
+                                            ), // 普通卡片使用卡片背景（700）
                                     margin: const EdgeInsets.symmetric(
                                       vertical: 4,
                                     ),
@@ -343,7 +353,9 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                     key: ValueKey(
                                       template.id + index.toString(),
                                     ),
-                                    color: AppColors.getCardBackground(context), // 設置卡片背景
+                                    color: AppColors.background(
+                                      context,
+                                    ), // 設置卡片背景
                                     margin: const EdgeInsets.symmetric(
                                       vertical: 4,
                                     ),
@@ -415,7 +427,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                   onPressed: () => Navigator.of(context).pop(),
                   type: CommonButtonType.solid,
                   shape: CommonButtonShape.capsule,
-                  color: AppColors.getBlueButtonColor(context), // 使用統一的藍色
+                  color: AppColors.blueButton(context), // 使用統一的藍色
                   textColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -543,7 +555,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                           },
                   type: CommonButtonType.solid,
                   shape: CommonButtonShape.capsule,
-                  color: AppColors.getBlueButtonColor(context), // 使用統一的藍色
+                  color: AppColors.blueButton(context), // 使用統一的藍色
                   textColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -581,7 +593,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
     showTopSnackBar(
       context,
       '已載入播放列表 "${playlist.name}"',
-      backgroundColor: AppColors.getBlueButtonColor(context), // 使用統一的藍色
+      backgroundColor: AppColors.blueButton(context), // 使用統一的藍色
       icon: Icons.playlist_play,
     );
   }
@@ -663,7 +675,9 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               context,
                               '已開啟新的播放列表',
                               icon: Icons.add_circle,
-                              backgroundColor: AppColors.getBlueButtonColor(context), // 使用統一的藍色
+                              backgroundColor: AppColors.blueButton(
+                                context,
+                              ), // 使用統一的藍色
                             );
                           },
                           icon: const Icon(Icons.add),
@@ -710,7 +724,9 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
 
                                     return Card(
                                       key: ValueKey(playlist.id),
-                                      color: AppColors.getCardBackground(context), // 設置卡片背景
+                                      color: AppColors.background(
+                                        context,
+                                      ), // 設置卡片背景
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 16,
                                         vertical: 6,
@@ -1079,7 +1095,9 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.getSectionBackground(context), // 保持 section 背景相對淺色
+                          color: AppColors.section(
+                            context,
+                          ), // 保持 section 背景相對淺色
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -1087,7 +1105,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                             Icon(
                               Icons.folder_open,
                               size: 16,
-                              color: AppColors.getInfoTextColor(context), // 使用主題顏色
+                              color: AppColors.infoText(context), // 使用主題顏色
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -1096,7 +1114,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.getInfoTextColor(context), // 使用主題顏色
+                                  color: AppColors.infoText(context), // 使用主題顏色
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1145,7 +1163,10 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.getButtonColor(context, Colors.deepPurple),
+                              color: AppColors.button(
+                                context,
+                                Colors.deepPurple,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -1172,8 +1193,14 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               onPressed: _isPlaying ? null : _showPlaylistMenu,
                               type: CommonButtonType.outline,
                               shape: CommonButtonShape.capsule,
-                              color: AppColors.getButtonColor(context, Colors.deepPurple),
-                              textColor: AppColors.getButtonColor(context, Colors.deepPurple),
+                              color: AppColors.button(
+                                context,
+                                Colors.deepPurple,
+                              ),
+                              textColor: AppColors.button(
+                                context,
+                                Colors.deepPurple,
+                              ),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 6,
@@ -1190,13 +1217,15 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               type: CommonButtonType.outline,
                               shape: CommonButtonShape.capsule,
                               color:
-                                  _sequence.isEmpty 
-                                      ? Colors.grey 
-                                      : AppColors.getBlueButtonColor(context), // 使用統一的藍色
+                                  _sequence.isEmpty
+                                      ? Colors.grey
+                                      : AppColors.blueButton(
+                                        context,
+                                      ), // 使用統一的藍色
                               textColor:
-                                  _sequence.isEmpty 
-                                      ? Colors.grey 
-                                      : AppColors.getBlueButtonColor(context),
+                                  _sequence.isEmpty
+                                      ? Colors.grey
+                                      : AppColors.blueButton(context),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 6,
@@ -1211,13 +1240,15 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               type: CommonButtonType.outline,
                               shape: CommonButtonShape.capsule,
                               color:
-                                  _sequence.isEmpty 
-                                      ? Colors.grey 
-                                      : AppColors.getBlueButtonColor(context), // 使用統一的藍色
+                                  _sequence.isEmpty
+                                      ? Colors.grey
+                                      : AppColors.blueButton(
+                                        context,
+                                      ), // 使用統一的藍色
                               textColor:
-                                  _sequence.isEmpty 
-                                      ? Colors.grey 
-                                      : AppColors.getBlueButtonColor(context),
+                                  _sequence.isEmpty
+                                      ? Colors.grey
+                                      : AppColors.blueButton(context),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 6,

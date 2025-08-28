@@ -9,7 +9,7 @@ class PresetButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final buttonColor = AppColors.getButtonColor(context, Colors.deepPurple);
+    final buttonColor = AppColors.button(context, Colors.deepPurple);
 
     return OutlinedButton(
       onPressed: onPressed,

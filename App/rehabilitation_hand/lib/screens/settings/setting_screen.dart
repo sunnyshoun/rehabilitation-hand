@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rehabilitation_hand/services/auth_service.dart';
 import 'package:rehabilitation_hand/services/theme_service.dart';
+import 'package:rehabilitation_hand/widgets/common/common_button.dart';
 import 'widgets/settings_tile.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -73,9 +74,17 @@ class SettingsScreen extends StatelessWidget {
                   }).toList(),
             ),
             actions: [
-              TextButton(
+              CommonButton(
+                label: '完成',
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('完成'),
+                type: CommonButtonType.solid,
+                shape: CommonButtonShape.capsule,
+                color: Theme.of(context).primaryColor,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
               ),
             ],
           ),
@@ -150,7 +159,9 @@ class SettingsScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            themeService.themeModeDisplayName,
+                            ThemeService.getThemeModeDisplayName(
+                              themeService.themeMode,
+                            ),
                             style: TextStyle(
                               color:
                                   Theme.of(context).textTheme.bodyMedium?.color,
@@ -187,7 +198,9 @@ class SettingsScreen extends StatelessWidget {
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
+            child: CommonButton(
+              label: '登出',
+              icon: Icons.logout,
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
@@ -196,13 +209,28 @@ class SettingsScreen extends StatelessWidget {
                         title: const Text('確認登出'),
                         content: const Text('確定要登出嗎？'),
                         actions: [
-                          TextButton(
+                          CommonButton(
+                            label: '取消',
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('取消'),
+                            type: CommonButtonType.transparent,
+                            shape: CommonButtonShape.capsule,
+                            textColor: Theme.of(context).colorScheme.primary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
                           ),
-                          ElevatedButton(
+                          CommonButton(
+                            label: '登出',
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('登出'),
+                            type: CommonButtonType.solid,
+                            shape: CommonButtonShape.capsule,
+                            color: Colors.red,
+                            textColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
                           ),
                         ],
                       ),
@@ -212,13 +240,11 @@ class SettingsScreen extends StatelessWidget {
                   auth.logout();
                 }
               },
-              icon: const Icon(Icons.logout),
-              label: const Text('登出'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+              type: CommonButtonType.solid,
+              shape: CommonButtonShape.capsule,
+              color: Colors.red,
+              textColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ],

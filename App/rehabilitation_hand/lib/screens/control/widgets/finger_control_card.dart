@@ -90,7 +90,7 @@ class FingerControlCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.getSectionBackground(context), // section 保持相對淺色
+        color: AppColors.section(context), // section 保持相對淺色
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
       ),
       child: Row(

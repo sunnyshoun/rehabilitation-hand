@@ -337,7 +337,7 @@ class _TemplateCardState extends State<TemplateCard>
       key: widget.actionGlobalKey,
       elevation: widget.isHighlighted ? 12 : 2,
       clipBehavior: Clip.antiAlias,
-      color: widget.backgroundColorOverride ?? AppColors.getCardBackground(context), // 使用更深的卡片背景
+      color: widget.backgroundColorOverride ?? AppColors.card(context), // 使用更深的卡片背景
       shape:
           widget.isHighlighted
               ? RoundedRectangleBorder(

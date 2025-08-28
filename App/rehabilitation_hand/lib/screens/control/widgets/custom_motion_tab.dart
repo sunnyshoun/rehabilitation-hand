@@ -129,19 +129,19 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                       floatingLabelBehavior:
                           FloatingLabelBehavior.always, // 標籤永遠浮在外框上
                       labelStyle: TextStyle(
-                        color: AppColors.getInfoTextColor(context)
+                        color: AppColors.infoText(context),
                       ), // 使用主題顏色
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: AppColors.getInfoTextColor(context), 
-                          width: 2
+                          color: AppColors.infoText(context),
+                          width: 2,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: AppColors.getInfoTextColor(context), 
-                          width: 2
+                          color: AppColors.infoText(context),
+                          width: 2,
                         ),
                       ),
                       errorText: errorText,
@@ -228,8 +228,8 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                   shape: CommonButtonShape.capsule,
                   color:
                       _isEditing
-                          ? AppColors.getButtonColor(context, Colors.orange)
-                          : AppColors.getBlueButtonColor(context), // 使用專門的藍色按鈕顏色
+                          ? AppColors.button(context, Colors.orange)
+                          : AppColors.blueButton(context), // 使用專門的藍色按鈕顏色
                   textColor: Colors.white,
                 ),
               ],
@@ -260,12 +260,12 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.getSectionBackground(context), // 使用 section 背景（800）
+                    color: AppColors.section(context), // 使用 section 背景（800）
                     borderRadius: BorderRadius.circular(
                       AppConstants.borderRadius,
                     ),
                     border: Border.all(
-                      color: AppColors.getInfoTextColor(context).withOpacity(0.5),
+                      color: AppColors.infoText(context).withOpacity(0.5),
                     ),
                   ),
                   child: Row(
@@ -273,7 +273,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                       Icon(
                         Icons.edit,
                         size: 20,
-                        color: AppColors.getInfoTextColor(context), // 自適應文字顏色
+                        color: AppColors.infoText(context), // 自適應文字顏色
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -281,9 +281,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                           '正在編輯: ${_editingTemplate?.name ?? ""}',
                           style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.getInfoTextColor(
-                              context,
-                            ), // 自適應文字顏色
+                            color: AppColors.infoText(context), // 自適應文字顏色
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -365,9 +363,10 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
         onPressed: _saveMotion,
         type: CommonButtonType.solid,
         shape: CommonButtonShape.capsule,
-        color: _isEditing 
-            ? AppColors.getButtonColor(context, Colors.orange) 
-            : AppColors.getBlueButtonColor(context), // 使用專門的藍色按鈕顏色
+        color:
+            _isEditing
+                ? AppColors.button(context, Colors.orange)
+                : AppColors.blueButton(context), // 使用專門的藍色按鈕顏色
         textColor: Colors.white,
         icon: _isEditing ? Icons.update : Icons.save,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -379,9 +378,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
           onPressed: isConnected ? _executeMotion : null,
           type: CommonButtonType.solid,
           shape: CommonButtonShape.capsule,
-          color: isConnected 
-              ? AppColors.connectedColor 
-              : Colors.grey.shade300,
+          color: isConnected ? AppColors.success : Colors.grey.shade300,
           textColor: Colors.white,
           icon: Icons.play_arrow,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
