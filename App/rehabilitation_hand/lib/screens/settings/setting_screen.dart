@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rehabilitation_hand/config/themes.dart';
 import 'package:rehabilitation_hand/services/auth_service.dart';
 import 'package:rehabilitation_hand/services/theme_service.dart';
 import 'package:rehabilitation_hand/services/language_service.dart';
@@ -318,7 +319,7 @@ class SettingsScreen extends StatelessWidget {
                             onPressed: () => Navigator.pop(context, true),
                             type: CommonButtonType.solid,
                             shape: CommonButtonShape.capsule,
-                            color: Colors.red,
+                            color: AppColors.button(context, Colors.red),
                             textColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -335,7 +336,7 @@ class SettingsScreen extends StatelessWidget {
               },
               type: CommonButtonType.solid,
               shape: CommonButtonShape.capsule,
-              color: Colors.red,
+              color: AppColors.button(context, Colors.red),
               textColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),

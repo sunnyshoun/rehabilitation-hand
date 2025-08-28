@@ -70,7 +70,7 @@ class AppColors {
 
   static Color button(BuildContext context, Color baseColor) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Color.lerp(baseColor, Colors.white, 0.3)!
+        ? Color.lerp(baseColor, const Color.fromARGB(255, 123, 123, 123), 0.25)!
         : baseColor;
   }
 

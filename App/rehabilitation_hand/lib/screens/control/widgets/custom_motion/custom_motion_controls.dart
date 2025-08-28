@@ -55,6 +55,15 @@ class CustomMotionControls extends StatelessWidget {
   List<Widget> _buildControlButtons(BuildContext context) {
     return [
       CommonButton(
+        label: AppStrings.reset,
+        onPressed: onReset,
+        type: CommonButtonType.solid,
+        shape: CommonButtonShape.capsule,
+        color: AppColors.button(context, Colors.red),
+        textColor: Colors.white,
+        icon: Icons.refresh,
+      ),
+      CommonButton(
         label: isEditing ? '更新動作' : '儲存動作',
         onPressed: onSaveMotion,
         type: CommonButtonType.solid,
@@ -79,14 +88,6 @@ class CustomMotionControls extends StatelessWidget {
           icon: Icons.play_arrow,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
-      ),
-      CommonButton(
-        label: AppStrings.reset,
-        onPressed: onReset,
-        type: CommonButtonType.transparent,
-        shape: CommonButtonShape.capsule,
-        textColor: Colors.red,
-        icon: Icons.refresh,
       ),
     ];
   }
