@@ -68,7 +68,9 @@ class _ControlScreenState extends State<ControlScreen>
     return Column(
       children: [
         Container(
-          color: AppColors.background(context), // 分頁背景使用最深的背景色（900）
+          color:
+              Theme.of(context).appBarTheme.backgroundColor ??
+              Theme.of(context).primaryColor,
           child: TabBar(
             controller: _tabController,
             tabs: const [Tab(text: '動作模板'), Tab(text: '自訂動作')],

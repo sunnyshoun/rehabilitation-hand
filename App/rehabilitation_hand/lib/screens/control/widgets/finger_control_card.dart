@@ -22,6 +22,7 @@ class FingerControlCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: AppColors.sectionBackground(context),
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -32,10 +33,7 @@ class FingerControlCard extends StatelessWidget {
               children: [
                 const Text(
                   '手指控制',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Wrap(
                   spacing: 8,
@@ -90,15 +88,24 @@ class FingerControlCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.section(context), // section 保持相對淺色
+        color: AppColors.section(context),
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStateIndicator('上: ${AppStrings.extendedState}', AppColors.extendedColor),
-          _buildStateIndicator('中: ${AppStrings.relaxedState}', AppColors.relaxedColor),
-          _buildStateIndicator('下: ${AppStrings.contractedState}', AppColors.contractedColor),
+          _buildStateIndicator(
+            '上: ${AppStrings.extendedState}',
+            AppColors.extendedColor,
+          ),
+          _buildStateIndicator(
+            '中: ${AppStrings.relaxedState}',
+            AppColors.relaxedColor,
+          ),
+          _buildStateIndicator(
+            '下: ${AppStrings.contractedState}',
+            AppColors.contractedColor,
+          ),
         ],
       ),
     );

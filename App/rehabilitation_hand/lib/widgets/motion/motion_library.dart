@@ -42,6 +42,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
 
     return Card(
       elevation: 2,
+      color: AppColors.sectionBackground(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -226,7 +227,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
         final isCustomTemplate = isCustom;
 
         final Color dragHighlightColor =
-            isCustomTemplate 
+            isCustomTemplate
                 ? (Theme.of(context).brightness == Brightness.dark
                     ? Colors.purple.shade700.withOpacity(0.8) // 使用 700 系列顏色
                     : Colors.purple.shade100)
@@ -313,31 +314,34 @@ class _TemplateCardState extends State<TemplateCard>
   @override
   Widget build(BuildContext context) {
     // 使用主題感知的顏色
-    final Color baseColor = widget.isCustom 
-        ? AppColors.customTemplateColor(context) 
-        : AppColors.defaultTemplateColor(context);
-    
-    final Color splashColor = widget.isCustom 
-        ? (Theme.of(context).brightness == Brightness.dark
-            ? Colors.purple.shade600.withOpacity(0.5) // 使用稍深的顏色作為水波紋
-            : Colors.purple.shade100)
-        : (Theme.of(context).brightness == Brightness.dark
-            ? Colors.blue.shade600.withOpacity(0.5) // 使用稍深的顏色作為水波紋
-            : Colors.blue.shade100);
-    
-    final Color highlightColor = widget.isCustom
-        ? (Theme.of(context).brightness == Brightness.dark
-            ? Colors.purple.shade600.withOpacity(0.3) // 使用稍深的顏色作為高亮
-            : Colors.purple.shade100.withAlpha(150))
-        : (Theme.of(context).brightness == Brightness.dark
-            ? Colors.blue.shade600.withOpacity(0.3) // 使用稍深的顏色作為高亮
-            : Colors.blue.shade100.withAlpha(150));
+    final Color baseColor =
+        widget.isCustom
+            ? AppColors.customTemplateColor(context)
+            : AppColors.defaultTemplateColor(context);
+
+    final Color splashColor =
+        widget.isCustom
+            ? (Theme.of(context).brightness == Brightness.dark
+                ? Colors.purple.shade600.withOpacity(0.5) // 使用稍深的顏色作為水波紋
+                : Colors.purple.shade100)
+            : (Theme.of(context).brightness == Brightness.dark
+                ? Colors.blue.shade600.withOpacity(0.5) // 使用稍深的顏色作為水波紋
+                : Colors.blue.shade100);
+
+    final Color highlightColor =
+        widget.isCustom
+            ? (Theme.of(context).brightness == Brightness.dark
+                ? Colors.purple.shade600.withOpacity(0.3) // 使用稍深的顏色作為高亮
+                : Colors.purple.shade100.withAlpha(150))
+            : (Theme.of(context).brightness == Brightness.dark
+                ? Colors.blue.shade600.withOpacity(0.3) // 使用稍深的顏色作為高亮
+                : Colors.blue.shade100.withAlpha(150));
 
     return Card(
       key: widget.actionGlobalKey,
       elevation: widget.isHighlighted ? 12 : 2,
       clipBehavior: Clip.antiAlias,
-      color: widget.backgroundColorOverride ?? AppColors.card(context), // 使用更深的卡片背景
+      color: widget.backgroundColorOverride ?? AppColors.card(context),
       shape:
           widget.isHighlighted
               ? RoundedRectangleBorder(
@@ -375,10 +379,11 @@ class _TemplateCardState extends State<TemplateCard>
                   if (widget.isCustom && widget.showMoreButton)
                     IconButton(
                       icon: Icon(
-                        Icons.more_vert, 
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey.shade400
-                            : Colors.grey
+                        Icons.more_vert,
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? Colors.grey.shade400
+                                : Colors.grey,
                       ),
                       onPressed: widget.onShowActions,
                       padding: EdgeInsets.zero,

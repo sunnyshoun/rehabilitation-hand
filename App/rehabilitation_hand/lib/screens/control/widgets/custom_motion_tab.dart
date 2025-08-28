@@ -118,6 +118,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
+              backgroundColor: AppColors.sectionBackground(context),
               title: Text(_isEditing ? '更新動作' : '儲存動作'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,

@@ -45,9 +45,11 @@ class FingerSlider extends StatelessWidget {
                   overlayRadius: isCompact ? 25 : 30,
                 ),
                 activeTrackColor: _getStateColor(state),
-                inactiveTrackColor: AppColors.card(context), // 使用主題背景顏色
+                inactiveTrackColor: AppColors.slider(context),
                 thumbColor: _getStateColor(state),
-                overlayColor: _getStateColor(state).withAlpha((0.3 * 255).toInt()),
+                overlayColor: _getStateColor(
+                  state,
+                ).withAlpha((0.3 * 255).toInt()),
               ),
               child: Slider(
                 value: _stateToSliderValue(state),

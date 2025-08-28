@@ -206,6 +206,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
+              backgroundColor: AppColors.sectionBackground(context),
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -238,7 +239,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.background(context), // 使用卡片背景顏色
+                        color: AppColors.card(context), // 使用卡片背景顏色
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -258,9 +259,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                         decoration: BoxDecoration(
                           color:
                               Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.section(
-                                    context,
-                                  ) // 深色模式使用 section 背景（800）
+                                  ? AppColors.section(context)
                                   : Colors.blue.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -308,7 +307,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                                       0.6,
                                                     ) // 使用 700 系列的綠色
                                                 : Colors.green.shade100)
-                                            : AppColors.background(
+                                            : AppColors.section(
                                               context,
                                             ), // 普通卡片使用卡片背景（700）
                                     margin: const EdgeInsets.symmetric(
@@ -353,9 +352,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                     key: ValueKey(
                                       template.id + index.toString(),
                                     ),
-                                    color: AppColors.background(
-                                      context,
-                                    ), // 設置卡片背景
+                                    color: AppColors.section(context), // 設置卡片背景
                                     margin: const EdgeInsets.symmetric(
                                       vertical: 4,
                                     ),
@@ -471,6 +468,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
+              backgroundColor: AppColors.sectionBackground(context),
               title: Text(_currentPlaylistId != null ? '更新播放列表' : '儲存播放列表'),
               content: TextField(
                 autofocus: true,
@@ -619,6 +617,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
     List<MotionPlaylist> playlists = List.from(storageService.playlists);
 
     showModalBottomSheet(
+      backgroundColor: AppColors.sectionBackground(context),
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -675,15 +674,14 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               context,
                               '已開啟新的播放列表',
                               icon: Icons.add_circle,
-                              backgroundColor: AppColors.blueButton(
-                                context,
-                              ), // 使用統一的藍色
+                              backgroundColor: AppColors.blueButton(context),
                             );
                           },
                           icon: const Icon(Icons.add),
                           label: const Text('新增播放列表'),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 40),
+                            backgroundColor: AppColors.card(context),
                           ),
                         ),
                       ),
@@ -724,9 +722,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
 
                                     return Card(
                                       key: ValueKey(playlist.id),
-                                      color: AppColors.background(
-                                        context,
-                                      ), // 設置卡片背景
+                                      color: AppColors.card(context), // 設置卡片背景
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 16,
                                         vertical: 6,
@@ -1059,6 +1055,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
               const SizedBox(height: 16),
               Card(
                 elevation: 2,
+                color: AppColors.sectionBackground(context),
                 child: Column(
                   children: [
                     ListTile(

@@ -3,14 +3,28 @@ import 'package:flutter/material.dart';
 class AppColors {
   // 層級：最深背景 → 中層區塊 → 卡片/元件 → 前景/強調色
   static const Color darkBackground = Color(0xFF121212); // 最深
+  static const Color darkSectionBackground = Color.fromARGB(
+    255,
+    22,
+    25,
+    29,
+  ); // 中間
   static const Color darkSection = Color(0xFF21252A); // 中間
   static const Color darkCard = Color(0xFF2D3137); // 最淺前景
+  static const Color darkSlider = Color(0xFF2D3137); // 最淺前景
   static const Color darkPrimary = Color(0xFF448AFF);
   static const Color darkDivider = Color(0xFF33373D);
 
   static const Color lightBackground = Colors.white;
+  static const Color lightSectionBackground = Color.fromARGB(
+    255,
+    255,
+    255,
+    255,
+  );
   static const Color lightSection = Color(0xFFF4F6F8);
   static const Color lightCard = Colors.white;
+  static const Color lightSlider = Color.fromARGB(255, 224, 224, 224);
   static const Color lightPrimary = Colors.blue;
   static const Color lightDivider = Color(0xFFE0E0E0);
 
@@ -24,6 +38,11 @@ class AppColors {
           ? darkSection
           : lightSection;
 
+  static Color sectionBackground(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? darkSectionBackground
+          : lightSectionBackground;
+
   static Color card(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkCard : lightCard;
 
@@ -36,6 +55,11 @@ class AppColors {
       Theme.of(context).brightness == Brightness.dark
           ? darkDivider
           : lightDivider;
+
+  static Color slider(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? darkSlider
+          : lightSlider;
 
   static Color customTemplateColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
