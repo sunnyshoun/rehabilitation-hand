@@ -8,6 +8,7 @@ class AppConstants {
   static const Duration animationDuration = Duration(milliseconds: 300);
   static const Duration snackBarDuration = Duration(seconds: 1);
   static const Duration overlayAnimationDuration = Duration(milliseconds: 200);
+  static const Duration themeTransitionDuration = Duration(milliseconds: 200);
   
   // 藍牙相關
   static const Duration bluetoothConnectionDelay = Duration(milliseconds: 500);
@@ -37,6 +38,7 @@ class AppConstants {
   static const String customTemplatesKey = 'custom_motion_templates';
   static const String defaultTemplatesOrderKey = 'default_templates_order';
   static const String playlistsKey = 'motion_playlists';
+  static const String themeModeKey = 'theme_mode';
 }
 
 class AppStrings {
@@ -57,6 +59,11 @@ class AppStrings {
   static const String relaxMotion = '放鬆';
   static const String okGesture = 'OK手勢';
   
+  // 主題相關
+  static const String systemTheme = '根據系統';
+  static const String lightTheme = '亮色模式';
+  static const String darkTheme = '深色模式';
+  
   // 錯誤訊息
   static const String loginFailed = '登入失敗，請檢查帳號密碼';
   static const String bluetoothNotConnected = '請先連接藍牙設備';
@@ -75,4 +82,6 @@ class AppStrings {
   static const String pause = '暫停';
   static const String resume = '繼續';
   static const String reset = '重置';
+  static const String done = '完成';
+  static const String settings = '設定';
 }

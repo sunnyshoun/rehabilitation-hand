@@ -70,19 +70,14 @@ class _ControlScreenState extends State<ControlScreen>
           color: Theme.of(context).primaryColor.withOpacity(0.1),
           child: TabBar(
             controller: _tabController,
-            tabs: const [
-              Tab(text: '動作模板'),
-              Tab(text: '自訂動作'),
-            ],
+            tabs: const [Tab(text: '動作模板'), Tab(text: '自訂動作')],
           ),
         ),
         Expanded(
           child: TabBarView(
             controller: _tabController,
             children: [
-              MotionTemplatesTab(
-                onEditTemplate: _handleEditTemplate,
-              ),
+              MotionTemplatesTab(onEditTemplate: _handleEditTemplate),
               CustomMotionTab(
                 editingTemplateId: _editingTemplateId,
                 onEditComplete: _clearEditingTemplate,

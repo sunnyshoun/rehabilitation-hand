@@ -13,7 +13,8 @@ class CommonButton extends StatelessWidget {
   final Color? textColor;
   final EdgeInsetsGeometry? padding;
   final double borderRadius;
-  final Widget? icon;
+  final IconData? icon; // 改成 IconData
+  final double iconSize;
 
   const CommonButton({
     super.key,
@@ -26,6 +27,7 @@ class CommonButton extends StatelessWidget {
     this.padding,
     this.borderRadius = 12,
     this.icon,
+    this.iconSize = 16,
   });
 
   @override
@@ -45,12 +47,23 @@ class CommonButton extends StatelessWidget {
     final btnPadding =
         padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12);
 
-    Widget child =
+    final Widget child =
         icon == null
             ? Text(label)
             : Row(
               mainAxisSize: MainAxisSize.min,
-              children: [icon!, const SizedBox(width: 8), Text(label)],
+              children: [
+                Icon(
+                  icon,
+                  size: iconSize,
+                  color:
+                      textColor ??
+                      color ??
+                      Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(label),
+              ],
             );
 
     switch (type) {
@@ -73,6 +86,7 @@ class CommonButton extends StatelessWidget {
             foregroundColor: textColor ?? color,
             side: BorderSide(
               color: color ?? Theme.of(context).colorScheme.primary,
+              width: 2,
             ),
             shape: buttonShape,
             padding: btnPadding,

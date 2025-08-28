@@ -252,22 +252,33 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.infoBackground,
+                    color: AppColors.getInfoBackground(context), // 自適應顏色
                     borderRadius: BorderRadius.circular(
                       AppConstants.borderRadius,
                     ),
-                    border: Border.all(color: Colors.blue.shade200),
+                    border: Border.all(
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.blue.shade600
+                              : Colors.blue.shade200,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.edit, size: 20, color: Colors.blue.shade700),
+                      Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: AppColors.getInfoTextColor(context), // 自適應文字顏色
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '正在編輯: ${_editingTemplate?.name ?? ""}',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.blue.shade700,
+                            color: AppColors.getInfoTextColor(
+                              context,
+                            ), // 自適應文字顏色
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -351,7 +362,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
         shape: CommonButtonShape.capsule,
         color: _isEditing ? Colors.orange : Theme.of(context).primaryColor,
         textColor: Colors.white,
-        icon: Icon(_isEditing ? Icons.update : Icons.save, color: Colors.white),
+        icon: _isEditing ? Icons.update : Icons.save,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
       Tooltip(
@@ -363,7 +374,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
           shape: CommonButtonShape.capsule,
           color: isConnected ? AppColors.connectedColor : Colors.grey.shade300,
           textColor: Colors.white,
-          icon: const Icon(Icons.play_arrow, color: Colors.white),
+          icon: Icons.play_arrow,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
@@ -377,7 +388,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
         type: CommonButtonType.transparent,
         shape: CommonButtonShape.capsule,
         textColor: Colors.red,
-        icon: const Icon(Icons.refresh, color: Colors.red),
+        icon: Icons.refresh,
       ),
     ];
   }

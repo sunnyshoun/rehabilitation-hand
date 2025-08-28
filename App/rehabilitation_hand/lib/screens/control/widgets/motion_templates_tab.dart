@@ -56,7 +56,10 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
     showTopSnackBar(
       context,
       '"${template.name}" 已加入序列',
-      backgroundColor: Colors.blue,
+      backgroundColor:
+          Theme.of(context).brightness == Brightness.dark
+              ? Colors.blue.shade700
+              : Colors.blue,
       icon: Icons.add_circle_outline,
     );
   }
@@ -220,7 +223,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                       shape: CommonButtonShape.capsule,
                       color: Colors.red,
                       textColor: Colors.red,
-                      icon: const Icon(Icons.clear_all, color: Colors.red),
+                      icon: Icons.clear_all,
+
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 8,
@@ -236,7 +240,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Theme.of(context).cardTheme.color,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -398,18 +402,20 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                 ),
               ),
               actions: [
-                ElevatedButton(
+                CommonButton(
+                  label: '完成',
                   onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    shape: const StadiumBorder(),
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
+                  type: CommonButtonType.solid,
+                  shape: CommonButtonShape.capsule,
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.blue.shade700
+                          : Colors.blue,
+                  textColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
                   ),
-                  child: const Text('完成'),
                 ),
               ],
             );
@@ -486,7 +492,8 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                   onPressed: () => Navigator.pop(context),
                   child: const Text('取消'),
                 ),
-                ElevatedButton(
+                CommonButton(
+                  label: _currentPlaylistId != null ? '更新' : '儲存',
                   onPressed:
                       (tempName.isEmpty || errorText != null)
                           ? null
@@ -529,7 +536,14 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               );
                             }
                           },
-                  child: Text(_currentPlaylistId != null ? '更新' : '儲存'),
+                  type: CommonButtonType.solid,
+                  shape: CommonButtonShape.capsule,
+                  color: Colors.blue,
+                  textColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                 ),
               ],
             );
@@ -562,7 +576,10 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
     showTopSnackBar(
       context,
       '已載入播放列表 "${playlist.name}"',
-      backgroundColor: Colors.blue,
+      backgroundColor:
+          Theme.of(context).brightness == Brightness.dark
+              ? Colors.blue.shade700
+              : Colors.blue,
       icon: Icons.playlist_play,
     );
   }
@@ -644,7 +661,11 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                               context,
                               '已開啟新的播放列表',
                               icon: Icons.add_circle,
-                              backgroundColor: Colors.blue,
+                              backgroundColor:
+                                  Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.blue.shade700
+                                      : Colors.blue,
                             );
                           },
                           icon: const Icon(Icons.add),
@@ -1093,11 +1114,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                       ),
                       trailing: CommonButton(
                         label: '播放',
-                        icon: const Icon(
-                          Icons.play_arrow,
-                          size: 16,
-                          color: Colors.white,
-                        ),
+                        icon: Icons.play_arrow,
                         onPressed:
                             (isConnected && _sequence.isNotEmpty)
                                 ? _executeSequence
@@ -1207,25 +1224,54 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            TextButton.icon(
-                              onPressed: _isPlaying ? null : _savePlaylist,
-                              icon: const Icon(Icons.save, size: 16),
-                              label: const Text('儲存'),
-                            ),
-                            const SizedBox(width: 8),
-                            TextButton.icon(
+                            CommonButton(
+                              label: '管理',
+                              icon: Icons.folder_open,
                               onPressed: _isPlaying ? null : _showPlaylistMenu,
-                              icon: const Icon(Icons.folder_open, size: 16),
-                              label: const Text('管理'),
+                              type: CommonButtonType.outline,
+                              shape: CommonButtonShape.capsule,
+                              color: Colors.deepPurple,
+                              textColor: Colors.deepPurple,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                             ),
                             const SizedBox(width: 8),
-                            TextButton.icon(
+                            CommonButton(
+                              label: '序列內容',
+                              icon: Icons.list_alt,
                               onPressed:
                                   _sequence.isEmpty
                                       ? null
                                       : _showSequenceDialog,
-                              icon: const Icon(Icons.list_alt, size: 16),
-                              label: const Text('序列內容'),
+                              type: CommonButtonType.outline,
+                              shape: CommonButtonShape.capsule,
+                              color:
+                                  _sequence.isEmpty ? Colors.grey : Colors.blue,
+                              textColor:
+                                  _sequence.isEmpty ? Colors.grey : Colors.blue,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            CommonButton(
+                              label: '儲存',
+                              icon: Icons.save,
+                              onPressed:
+                                  _sequence.isEmpty ? null : _savePlaylist,
+                              type: CommonButtonType.outline,
+                              shape: CommonButtonShape.capsule,
+                              color:
+                                  _sequence.isEmpty ? Colors.grey : Colors.blue,
+                              textColor:
+                                  _sequence.isEmpty ? Colors.grey : Colors.blue,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                             ),
                           ],
                         ),
