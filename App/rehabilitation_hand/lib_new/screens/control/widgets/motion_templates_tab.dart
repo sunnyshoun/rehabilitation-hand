@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import '../models/motion_model.dart';
-import '../services/bluetooth_service.dart';
-import '../services/motion_storage_service.dart';
-import 'top_snackbar.dart';
-import 'motion_library.dart'; // Import the new library widget
+import 'package:rehabilitation_hand/models/motion_model.dart';
+import 'package:rehabilitation_hand/services/bluetooth_service.dart';
+import 'package:rehabilitation_hand/services/motion_storage_service.dart';
+import 'package:rehabilitation_hand/widgets/common/top_snackbar.dart';
+import 'package:rehabilitation_hand/widgets/motion/motion_library.dart';
 
 class MotionTemplatesTab extends StatefulWidget {
   final Function(String)? onEditTemplate;
