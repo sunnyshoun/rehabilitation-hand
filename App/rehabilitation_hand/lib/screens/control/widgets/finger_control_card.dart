@@ -38,28 +38,25 @@ class FingerControlCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        PresetButton(
-                          label: '放鬆',
-                          onPressed: () => onPresetPressed('relax'),
-                        ),
-                        const SizedBox(width: 4),
-                        PresetButton(
-                          label: AppStrings.fistMotion,
-                          onPressed: () => onPresetPressed('fist'),
-                        ),
-                        const SizedBox(width: 4),
-                        PresetButton(
-                          label: AppStrings.openMotion,
-                          onPressed: () => onPresetPressed('open'),
-                        ),
-                      ],
-                    ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      PresetButton(
+                        label: '放鬆',
+                        onPressed: () => onPresetPressed('relax'),
+                      ),
+                      const SizedBox(width: 2),
+                      PresetButton(
+                        label: AppStrings.fistMotion,
+                        onPressed: () => onPresetPressed('fist'),
+                      ),
+                      const SizedBox(width: 2),
+                      PresetButton(
+                        label: AppStrings.openMotion,
+                        onPressed: () => onPresetPressed('open'),
+                      ),
+                    ],
                   ),
                 ),
               ],

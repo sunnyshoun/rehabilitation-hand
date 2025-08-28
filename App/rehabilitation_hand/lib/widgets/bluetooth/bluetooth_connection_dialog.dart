@@ -115,7 +115,7 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
   Widget build(BuildContext context) {
     final btService = Provider.of<BluetoothService>(context);
     final screenSize = MediaQuery.of(context).size;
-    final dialogWidth = screenSize.width > 600 ? 500.0 : screenSize.width * 0.9;
+    final dialogWidth = screenSize.width > 600 ? 550.0 : screenSize.width * 0.95;
 
     return AlertDialog(
       title: Row(

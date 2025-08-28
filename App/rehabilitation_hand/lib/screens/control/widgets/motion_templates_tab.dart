@@ -232,7 +232,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                 ],
               ),
               content: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
+                width: MediaQuery.of(context).size.width * 0.95,
                 height: 400,
                 child: Column(
                   children: [
@@ -318,36 +318,19 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                         child: Text('${index + 1}'),
                                       ),
                                       title: Text(template.name),
-                                      subtitle: Container(
-                                        alignment: Alignment.centerLeft,
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<int>(
-                                            value: _durations[index],
-                                            isDense: true,
-                                            items:
-                                                List.generate(10, (i) => i + 1)
-                                                    .map(
-                                                      (sec) => DropdownMenuItem(
-                                                        value: sec,
-                                                        child: Text(
-                                                          '持續: $sec 秒',
-                                                          style: const TextStyle(
-                                                            fontSize: 13,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
-                                                    .toList(),
-                                            onChanged: (value) {
-                                              if (value != null) {
-                                                setDialogState(
-                                                  () =>
-                                                      _durations[index] = value,
-                                                );
-                                              }
-                                            },
-                                          ),
-                                        ),
+                                      subtitle: _buildDurationPicker(
+                                        context,
+                                        _durations[index],
+                                        (newDuration) {
+                                          if (newDuration != null) {
+                                            setDialogState(
+                                              () =>
+                                                  _durations[index] =
+                                                      newDuration,
+                                            );
+                                          }
+                                        },
+                                        isCompact: true,
                                       ),
                                       trailing: IconButton(
                                         icon: const Icon(
@@ -378,35 +361,26 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
                                       vertical: 4,
                                     ),
                                     child: ListTile(
+                                      contentPadding: EdgeInsets.only(
+                                        left: 10.0,
+                                        right: 0.0,
+                                      ),
                                       leading: CircleAvatar(
                                         child: Text('${index + 1}'),
                                       ),
                                       title: Text(template.name),
-                                      subtitle: Row(
-                                        children: [
-                                          const Text('持續: '),
-                                          DropdownButton<int>(
-                                            value: _durations[index],
-                                            items:
-                                                List.generate(10, (i) => i + 1)
-                                                    .map(
-                                                      (sec) => DropdownMenuItem(
-                                                        value: sec,
-                                                        child: Text('$sec 秒'),
-                                                      ),
-                                                    )
-                                                    .toList(),
-                                            onChanged: (value) {
-                                              if (value != null) {
-                                                setDialogState(
-                                                  () =>
-                                                      _durations[index] = value,
-                                                );
-                                              }
-                                            },
-                                            underline: Container(),
-                                          ),
-                                        ],
+                                      subtitle: _buildDurationPicker(
+                                        context,
+                                        _durations[index],
+                                        (newDuration) {
+                                          if (newDuration != null) {
+                                            setDialogState(
+                                              () =>
+                                                  _durations[index] =
+                                                      newDuration,
+                                            );
+                                          }
+                                        },
                                       ),
                                       trailing: IconButton(
                                         icon: const Icon(
@@ -459,6 +433,88 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
       },
     );
     setState(() {});
+  }
+
+  Widget _buildDurationPicker(
+    BuildContext context,
+    int currentDuration,
+    ValueChanged<int?> onDurationChanged, {
+    bool isCompact = false,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return SizedBox(
+                  height: 250,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Text(
+                          '選擇持續時間',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      Expanded(
+                        child: ListWheelScrollView.useDelegate(
+                          itemExtent: 50,
+                          perspective: 0.005,
+                          diameterRatio: 1.2,
+                          controller: FixedExtentScrollController(
+                            initialItem: currentDuration - 1,
+                          ),
+                          onSelectedItemChanged: (index) {
+                            onDurationChanged(index + 1);
+                          },
+                          childDelegate: ListWheelChildBuilderDelegate(
+                            builder: (context, index) {
+                              return Center(
+                                child: Text(
+                                  '${index + 1} 秒',
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              );
+                            },
+                            childCount: 60,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.section(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.withOpacity(0.5)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.timer_outlined,
+                  size: 16,
+                  color: AppColors.infoText(context),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '$currentDuration 秒',
+                  style: TextStyle(color: AppColors.infoText(context)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void _savePlaylist() {
