@@ -48,10 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () => Navigator.pop(context, false),
                   child: const Text('取消'),
                 ),
-                ElevatedButton.icon(
+                CommonButton(
+                  label: '開啟藍牙',
                   onPressed: () => Navigator.pop(context, true),
-                  icon: const Icon(Icons.bluetooth),
-                  label: const Text('開啟藍牙'),
+                  type: CommonButtonType.solid,
+                  color: AppColors.button(context, Colors.blueAccent),
+                  textColor: Colors.white,
+                  icon: Icons.bluetooth,
                 ),
               ],
             ),
