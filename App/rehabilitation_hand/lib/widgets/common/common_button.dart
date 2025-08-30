@@ -13,7 +13,7 @@ class CommonButton extends StatelessWidget {
   final Color? textColor;
   final EdgeInsetsGeometry? padding;
   final double borderRadius;
-  final IconData? icon; // 改成 IconData
+  final IconData? icon;
   final double iconSize;
 
   const CommonButton({
@@ -57,9 +57,11 @@ class CommonButton extends StatelessWidget {
                   icon,
                   size: iconSize,
                   color:
-                      textColor ??
-                      color ??
-                      Theme.of(context).colorScheme.primary,
+                      onPressed == null
+                          ? Colors.grey
+                          : (textColor ??
+                              color ??
+                              Theme.of(context).colorScheme.primary),
                 ),
                 const SizedBox(width: 8),
                 Text(label),
@@ -83,9 +85,13 @@ class CommonButton extends StatelessWidget {
         return OutlinedButton(
           onPressed: onPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: textColor ?? color,
+            foregroundColor:
+                onPressed == null ? Colors.grey : (textColor ?? color),
             side: BorderSide(
-              color: color ?? Theme.of(context).colorScheme.primary,
+              color:
+                  onPressed == null
+                      ? Colors.grey
+                      : (color ?? Theme.of(context).colorScheme.primary),
               width: 2,
             ),
             shape: buttonShape,

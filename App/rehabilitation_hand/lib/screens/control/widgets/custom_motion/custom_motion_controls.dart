@@ -9,6 +9,7 @@ class CustomMotionControls extends StatelessWidget {
   final VoidCallback onSaveMotion;
   final VoidCallback onExecuteMotion;
   final VoidCallback onReset;
+  final bool isPlaying;
 
   const CustomMotionControls({
     super.key,
@@ -17,6 +18,7 @@ class CustomMotionControls extends StatelessWidget {
     required this.onSaveMotion,
     required this.onExecuteMotion,
     required this.onReset,
+    required this.isPlaying,
   });
 
   @override
@@ -80,10 +82,13 @@ class CustomMotionControls extends StatelessWidget {
         message: isConnected ? '發送動作指令' : AppStrings.bluetoothNotConnected,
         child: CommonButton(
           label: '執行動作',
-          onPressed: isConnected ? onExecuteMotion : null,
+          onPressed: isConnected && !isPlaying ? onExecuteMotion : null,
           type: CommonButtonType.solid,
           shape: CommonButtonShape.capsule,
-          color: isConnected ? AppColors.success : Colors.grey.shade300,
+          color:
+              isConnected && !isPlaying
+                  ? AppColors.success
+                  : Colors.grey.shade300,
           textColor: Colors.white,
           icon: Icons.play_arrow,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

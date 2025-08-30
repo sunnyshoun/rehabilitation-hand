@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rehabilitation_hand/config/themes.dart';
 import 'package:rehabilitation_hand/services/bluetooth_service.dart';
 import 'package:rehabilitation_hand/widgets/bluetooth/bluetooth_connection_dialog.dart';
 import 'package:rehabilitation_hand/screens/control/control_screen.dart';
 import 'package:rehabilitation_hand/screens/settings/setting_screen.dart';
+import 'package:rehabilitation_hand/widgets/common/playlist_player_bar.dart';
+import 'package:rehabilitation_hand/widgets/common/common_button.dart';
 import 'widgets/home_panel.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,27 +32,28 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!isEnabled) {
       final shouldEnable = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.bluetooth_disabled, color: Colors.orange),
-              SizedBox(width: 8),
-              Text('藍牙未開啟'),
-            ],
-          ),
-          content: const Text('需要開啟藍牙才能連接設備'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消'),
+        builder:
+            (context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.bluetooth_disabled, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Text('藍牙未開啟'),
+                ],
+              ),
+              content: const Text('需要開啟藍牙才能連接設備'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('取消'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(context, true),
+                  icon: const Icon(Icons.bluetooth),
+                  label: const Text('開啟藍牙'),
+                ),
+              ],
             ),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.pop(context, true),
-              icon: const Icon(Icons.bluetooth),
-              label: const Text('開啟藍牙'),
-            ),
-          ],
-        ),
       );
 
       if (shouldEnable == true) {
@@ -62,9 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final hasPermissions = await btService.checkPermissions();
     if (!hasPermissions && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('需要藍牙權限才能連接設備')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('需要藍牙權限才能連接設備')));
       return;
     }
 
@@ -82,29 +86,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('確認斷開連接'),
-        content: Text(
-          '確定要斷開與 ${btService.getConnectedDeviceName() ?? "設備"} 的連接嗎？',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('確認斷開連接'),
+            content: Text(
+              '確定要斷開與 ${btService.getConnectedDeviceName() ?? "設備"} 的連接嗎？',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('取消'),
+              ),
+              CommonButton(
+                label: '斷開',
+                color: AppColors.button(context, Colors.red),
+                textColor: Colors.white,
+                type: CommonButtonType.solid,
+                shape: CommonButtonShape.capsule,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
+                icon: Icons.link_off,
+                onPressed: () {
+                  btService.disconnect();
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('已斷開連接')));
+                },
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              btService.disconnect();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('已斷開連接')),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('斷開'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -123,12 +136,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         ],
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: const [
-          HomePanel(),
-          ControlScreen(),
-          SettingsScreen(),
+      body: Column(
+        children: [
+          Expanded(
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: const [HomePanel(), ControlScreen(), SettingsScreen()],
+            ),
+          ),
+          const PlaylistPlayerBar(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -157,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(color: Colors.white, fontSize: 13),
         ),
         style: TextButton.styleFrom(
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.button(context, Colors.green),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -177,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(color: Colors.white, fontSize: 13),
         ),
         style: TextButton.styleFrom(
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.button(context, Colors.orange),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),

@@ -11,12 +11,14 @@ class MotionLibrarySection extends StatefulWidget {
   final Function(MotionTemplate) onAddToSequence;
   final Function(String)? onEditTemplate;
   final Function(GlobalKey, MotionTemplate) onShowActions;
+  final bool isPlaying; // 新增播放狀態參數
 
   const MotionLibrarySection({
     super.key,
     required this.onAddToSequence,
     this.onEditTemplate,
     required this.onShowActions,
+    this.isPlaying = false, // 默認值為false
   });
 
   @override
@@ -33,6 +35,17 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
   }
 
   @override
+  void didUpdateWidget(MotionLibrarySection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 當開始播放時自動收起動作庫
+    if (!oldWidget.isPlaying && widget.isPlaying) {
+      setState(() {
+        _isLibraryExpanded = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final storageService = Provider.of<MotionStorageService>(context);
     final screenHeight = MediaQuery.of(context).size.height;
@@ -40,105 +53,141 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
 
     return Card(
       elevation: 2,
-      color: AppColors.sectionBackground(context),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.library_books, size: 28),
-            title: const Text(
-              '動作庫',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            trailing: IconButton(
-              icon: Icon(
-                _isLibraryExpanded ? Icons.expand_less : Icons.expand_more,
+      color:
+          widget.isPlaying
+              ? (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade800
+                  : Colors.grey.shade100)
+              : AppColors.sectionBackground(context),
+      child: AnimatedOpacity(
+        opacity: widget.isPlaying ? 0.5 : 1.0,
+        duration: const Duration(milliseconds: 300),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(
+                Icons.library_books,
+                size: 28,
+                color:
+                    widget.isPlaying
+                        ? (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey.shade400
+                            : Colors.grey)
+                        : null,
               ),
-              onPressed:
-                  () =>
-                      setState(() => _isLibraryExpanded = !_isLibraryExpanded),
+              title: Text(
+                '動作庫',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color:
+                      widget.isPlaying
+                          ? (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey.shade400
+                              : Colors.grey)
+                          : null,
+                ),
+              ),
+              trailing: IconButton(
+                icon: Icon(
+                  _isLibraryExpanded ? Icons.expand_less : Icons.expand_more,
+                  color:
+                      widget.isPlaying
+                          ? (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey.shade400
+                              : Colors.grey)
+                          : null,
+                ),
+                onPressed:
+                    widget.isPlaying
+                        ? null
+                        : () => setState(
+                          () => _isLibraryExpanded = !_isLibraryExpanded,
+                        ),
+              ),
             ),
-          ),
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: maxHeight),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        '預設動作 (長按拖曳排序)',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    _buildReorderableGrid(
-                      storageService: storageService,
-                      templates: storageService.defaultTemplates,
-                      isCustom: false,
-                      onReorder:
-                          widget.onEditTemplate == null
-                              ? null // 播放模式下禁用排序
-                              : (oldIndex, newIndex) async {
-                                await storageService.reorderDefaultTemplate(
-                                  oldIndex,
-                                  newIndex,
-                                );
-                              },
-                    ),
-                    const SizedBox(height: 16),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        '自訂動作 (長按拖曳排序)',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (storageService.customTemplates.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            '沒有自訂動作',
-                            style: TextStyle(color: Colors.grey),
+            AnimatedCrossFade(
+              firstChild: const SizedBox.shrink(),
+              secondChild: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxHeight),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          '預設動作 (長按拖曳排序)',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      )
-                    else
+                      ),
                       _buildReorderableGrid(
                         storageService: storageService,
-                        templates: storageService.customTemplates,
-                        isCustom: true,
+                        templates: storageService.defaultTemplates,
+                        isCustom: false,
                         onReorder:
                             widget.onEditTemplate == null
                                 ? null // 播放模式下禁用排序
                                 : (oldIndex, newIndex) async {
-                                  await storageService.reorderTemplate(
+                                  await storageService.reorderDefaultTemplate(
                                     oldIndex,
                                     newIndex,
                                   );
                                 },
                       ),
-                  ],
+                      const SizedBox(height: 16),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          '自訂動作 (長按拖曳排序)',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      if (storageService.customTemplates.isEmpty)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              '沒有自訂動作',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        )
+                      else
+                        _buildReorderableGrid(
+                          storageService: storageService,
+                          templates: storageService.customTemplates,
+                          isCustom: true,
+                          onReorder:
+                              widget.onEditTemplate == null
+                                  ? null // 播放模式下禁用排序
+                                  : (oldIndex, newIndex) async {
+                                    await storageService.reorderTemplate(
+                                      oldIndex,
+                                      newIndex,
+                                    );
+                                  },
+                        ),
+                    ],
+                  ),
                 ),
               ),
+              crossFadeState:
+                  _isLibraryExpanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 300),
             ),
-            crossFadeState:
-                _isLibraryExpanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 300),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

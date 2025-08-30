@@ -35,7 +35,7 @@ class _SavePlaylistDialogState extends State<SavePlaylistDialog> {
   void initState() {
     super.initState();
     _tempName =
-        widget.currentPlaylistName == '未命名播放列表'
+        widget.currentPlaylistName == '未命名動作列表'
             ? ''
             : widget.currentPlaylistName;
     _nameController = TextEditingController(text: _tempName);
@@ -94,10 +94,11 @@ class _SavePlaylistDialogState extends State<SavePlaylistDialog> {
       await storageService.savePlaylist(playlist);
 
       if (mounted) {
+        // 先呼叫儲存完成回調，再關閉對話框和顯示訊息
+        widget.onSaveComplete(playlist.id, _tempName);
         Navigator.pop(context);
-        showTopSnackBar(context, '播放列表 "$_tempName" 已儲存');
+        showTopSnackBar(context, '動作列表 "$_tempName" 已儲存');
       }
-      widget.onSaveComplete(playlist.id, _tempName);
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
@@ -115,12 +116,12 @@ class _SavePlaylistDialogState extends State<SavePlaylistDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.sectionBackground(context),
-      title: Text(widget.currentPlaylistId != null ? '更新播放列表' : '儲存播放列表'),
+      title: Text(widget.currentPlaylistId != null ? '更新動作列表' : '儲存動作列表'),
       content: TextField(
         autofocus: true,
         controller: _nameController,
         decoration: InputDecoration(
-          labelText: '播放列表名稱',
+          labelText: '動作列表名稱',
           floatingLabelBehavior: FloatingLabelBehavior.always,
           labelStyle: const TextStyle(color: Colors.blue),
           border: const OutlineInputBorder(),

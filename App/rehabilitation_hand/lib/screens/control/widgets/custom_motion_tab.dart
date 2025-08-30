@@ -4,6 +4,7 @@ import 'package:rehabilitation_hand/core/extensions/context_extensions.dart';
 import 'package:rehabilitation_hand/models/motion_model.dart';
 import 'package:rehabilitation_hand/services/bluetooth_service.dart';
 import 'package:rehabilitation_hand/services/motion_storage_service.dart';
+import 'package:rehabilitation_hand/services/playlist_player_service.dart';
 import 'package:rehabilitation_hand/config/constants.dart';
 import 'package:rehabilitation_hand/config/themes.dart';
 import 'package:rehabilitation_hand/screens/control/widgets/custom_motion/custom_motion_controls.dart';
@@ -123,6 +124,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
 
   @override
   Widget build(BuildContext context) {
+    final playerService = Provider.of<PlaylistPlayerService>(context);
     final btService = Provider.of<BluetoothService>(context);
     final isConnected = btService.connected;
 
@@ -211,6 +213,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                     _fingerStates.fillRange(0, 5, FingerState.relaxed);
                   });
                 },
+                isPlaying: playerService.isPlaying,
               ),
             ],
           ),

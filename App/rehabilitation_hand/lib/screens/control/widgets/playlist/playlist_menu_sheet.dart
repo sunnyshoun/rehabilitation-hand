@@ -41,7 +41,7 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
       builder:
           (context) => AlertDialog(
             title: const Text('確認刪除'),
-            content: Text('確定要刪除播放列表 "${playlist.name}" 嗎？'),
+            content: Text('確定要刪除動作列表 "${playlist.name}" 嗎？'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -59,14 +59,18 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
           ),
     );
 
+    if (!mounted) return; // 使用 context 前檢查
     if (confirm == true) {
       try {
         await storageService.deletePlaylist(playlist.id);
-        showTopSnackBar(context, '播放列表 "${playlist.name}" 已刪除');
+        if (!mounted) return;
+        showTopSnackBar(context, '動作列表 "${playlist.name}" 已刪除');
+        if (!mounted) return;
         setState(() {
           _playlists.removeWhere((p) => p.id == playlist.id);
         });
       } catch (e) {
+        if (!mounted) return;
         showTopSnackBar(
           context,
           '刪除失敗: $e',
@@ -96,7 +100,7 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      '管理播放列表',
+                      '管理動作列表',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -127,7 +131,7 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
                     widget.onNewPlaylist();
                   },
                   icon: const Icon(Icons.add),
-                  label: const Text('新增播放列表'),
+                  label: const Text('新增動作列表'),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 40),
                     backgroundColor: AppColors.card(context),
@@ -139,7 +143,7 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
                     _playlists.isEmpty
                         ? const Center(
                           child: Text(
-                            '沒有已儲存的播放列表',
+                            '沒有已儲存的動作列表',
                             style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
                         )
@@ -197,8 +201,10 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
                             });
                             try {
                               await storageService.saveAllPlaylists(_playlists);
-                              showTopSnackBar(context, '播放列表順序已更新');
+                              if (!mounted) return;
+                              showTopSnackBar(context, '動作列表順序已更新');
                             } catch (e) {
+                              if (!mounted) return;
                               showTopSnackBar(
                                 context,
                                 '順序儲存失敗: $e',

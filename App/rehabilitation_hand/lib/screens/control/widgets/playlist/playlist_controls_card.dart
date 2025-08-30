@@ -9,6 +9,7 @@ class PlaylistControlsCard extends StatelessWidget {
   final bool isConnected;
   final int currentPlayingIndex;
   final VoidCallback onExecuteSequence;
+  final VoidCallback onStopSequence;
   final VoidCallback onShowPlaylistMenu;
   final VoidCallback onShowSequenceDialog;
   final VoidCallback onSavePlaylist;
@@ -21,6 +22,7 @@ class PlaylistControlsCard extends StatelessWidget {
     required this.isConnected,
     required this.currentPlayingIndex,
     required this.onExecuteSequence,
+    required this.onStopSequence,
     required this.onShowPlaylistMenu,
     required this.onShowSequenceDialog,
     required this.onSavePlaylist,
@@ -34,24 +36,28 @@ class PlaylistControlsCard extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.playlist_play, size: 28),
+            leading: const Icon(Icons.front_hand, size: 28),
             title: const Text(
-              '播放列表',
+              '動作列表',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             trailing: CommonButton(
-              label: '播放',
-              icon: Icons.play_arrow,
+              label: isPlaying ? '停止' : '開始',
+              icon: isPlaying ? Icons.stop : Icons.play_arrow,
               onPressed:
-                  (isConnected && sequenceLength > 0)
+                  isPlaying
+                      ? onStopSequence
+                      : (isConnected && sequenceLength > 0)
                       ? onExecuteSequence
                       : null,
               type: CommonButtonType.solid,
               shape: CommonButtonShape.capsule,
               color:
-                  (isConnected && sequenceLength > 0)
-                      ? Colors.green
-                      : Colors.grey.shade300,
+                  isPlaying
+                      ? AppColors.button(context, Colors.red)
+                      : (isConnected && sequenceLength > 0)
+                      ? AppColors.button(context, Colors.green)
+                      : AppColors.button(context, Colors.grey.shade300),
               textColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             ),
@@ -180,15 +186,18 @@ class PlaylistControlsCard extends StatelessWidget {
                   CommonButton(
                     label: '儲存',
                     icon: Icons.save,
-                    onPressed: sequenceLength == 0 ? null : onSavePlaylist,
+                    onPressed:
+                        (sequenceLength == 0 || isPlaying)
+                            ? null
+                            : onSavePlaylist,
                     type: CommonButtonType.outline,
                     shape: CommonButtonShape.capsule,
                     color:
-                        sequenceLength == 0
+                        (sequenceLength == 0 || isPlaying)
                             ? Colors.grey
                             : AppColors.blueButton(context),
                     textColor:
-                        sequenceLength == 0
+                        (sequenceLength == 0 || isPlaying)
                             ? Colors.grey
                             : AppColors.blueButton(context),
                     padding: const EdgeInsets.symmetric(

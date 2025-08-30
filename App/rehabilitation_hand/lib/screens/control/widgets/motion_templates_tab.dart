@@ -13,6 +13,7 @@ import 'package:rehabilitation_hand/screens/control/widgets/playlist/save_playli
 import 'package:rehabilitation_hand/screens/control/widgets/playlist/sequence_dialog.dart';
 import 'package:rehabilitation_hand/screens/control/widgets/playlist/template_actions_overlay.dart';
 import 'package:rehabilitation_hand/widgets/motion/motion_library.dart';
+import 'package:rehabilitation_hand/services/playlist_player_service.dart';
 
 class MotionTemplatesTab extends StatefulWidget {
   final Function(String)? onEditTemplate;
@@ -28,16 +29,6 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
   // Key to get the position of the Stack that contains the overlay
   final GlobalKey _stackKey = GlobalKey();
 
-  // Sequence and playlist state
-  final List<MotionTemplate> _sequence = [];
-  final List<int> _durations = [];
-  bool _isPlaying = false;
-  bool _isPaused = false;
-  int _currentPlayingIndex = -1;
-  Timer? _playTimer;
-  String? _currentPlaylistId;
-  String _currentPlaylistName = '未命名播放列表';
-
   // State for the highlight overlay
   MotionTemplate? _highlightedTemplate;
   Rect? _highlightedTemplateRect;
@@ -46,19 +37,14 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
   @override
   bool get wantKeepAlive => true;
 
-  @override
-  void dispose() {
-    _playTimer?.cancel();
-    super.dispose();
-  }
-
   void _addToSequence(MotionTemplate template) {
-    if (_isPlaying) return; // 播放中不允許添加
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
+    if (playerService.isPlaying) return; // 播放中不允許添加
 
-    setState(() {
-      _sequence.add(template);
-      _durations.add(2); // Default duration
-    });
+    playerService.addToSequence(template);
     showTopSnackBar(
       context,
       '"${template.name}" 已加入序列',
@@ -68,6 +54,10 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
   }
 
   Future<void> _executeSequence() async {
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
     final btService = Provider.of<BluetoothService>(context, listen: false);
     if (!btService.connected) {
       showTopSnackBar(
@@ -78,95 +68,15 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
       );
       return;
     }
-
-    setState(() {
-      _isPlaying = true;
-      _isPaused = false;
-      _currentPlayingIndex = 0;
-    });
-
-    await _playCurrentMotion();
-  }
-
-  Future<void> _playCurrentMotion() async {
-    if (!_isPlaying || _isPaused || _currentPlayingIndex >= _sequence.length) {
-      if (_currentPlayingIndex >= _sequence.length) {
-        _stopPlaying();
-      }
-      return;
-    }
-
-    final btService = Provider.of<BluetoothService>(context, listen: false);
-    final template = _sequence[_currentPlayingIndex];
-
-    if (template.positions.isNotEmpty) {
-      final position = template.positions.first;
-      await btService.sendFingerPosition(position);
-
-      _playTimer?.cancel();
-      _playTimer = Timer(
-        Duration(seconds: _durations[_currentPlayingIndex]),
-        () {
-          if (_isPlaying && !_isPaused && mounted) {
-            setState(() {
-              _currentPlayingIndex++;
-            });
-            _playCurrentMotion();
-          }
-        },
-      );
-    }
-  }
-
-  void _pausePlaying() {
-    setState(() {
-      _isPaused = true;
-    });
-    _playTimer?.cancel();
-  }
-
-  void _resumePlaying() {
-    setState(() {
-      _isPaused = false;
-    });
-    _playCurrentMotion();
-  }
-
-  void _stopPlaying() {
-    setState(() {
-      _isPlaying = false;
-      _isPaused = false;
-      _currentPlayingIndex = -1;
-    });
-    _playTimer?.cancel();
-
-    if (mounted) {
-      showTopSnackBar(context, '動作序列已停止');
-    }
-  }
-
-  void _nextMotion() {
-    if (!_isPlaying || _currentPlayingIndex >= _sequence.length - 1) return;
-
-    _playTimer?.cancel();
-    setState(() {
-      _currentPlayingIndex++;
-    });
-    _playCurrentMotion();
-  }
-
-  void _previousMotion() {
-    if (!_isPlaying || _currentPlayingIndex <= 0) return;
-
-    _playTimer?.cancel();
-    setState(() {
-      _currentPlayingIndex--;
-    });
-    _playCurrentMotion();
+    await playerService.executeSequence();
   }
 
   void _clearSequence() {
-    if (_isPlaying) return; // 播放中不允許清除
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
+    if (playerService.isPlaying) return; // 播放中不允許清除
 
     showDialog(
       context: context,
@@ -182,10 +92,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
               CommonButton(
                 label: '清除',
                 onPressed: () {
-                  setState(() {
-                    _sequence.clear();
-                    _durations.clear();
-                  });
+                  playerService.clearSequence();
                   Navigator.pop(context);
                   showTopSnackBar(context, '序列已清空');
                 },
@@ -204,52 +111,44 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
   }
 
   Future<void> _showSequenceDialog() async {
-    if (_sequence.isEmpty) return;
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
+    if (playerService.sequence.isEmpty) return;
     await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return SequenceDialog(
-              sequence: _sequence,
-              durations: _durations,
-              isPlaying: _isPlaying,
-              currentPlayingIndex: _currentPlayingIndex,
-              onClearSequence: _clearSequence,
-              onReorder: (oldIndex, newIndex) {
-                setDialogState(() {
-                  if (newIndex > oldIndex) newIndex -= 1;
-                  final item = _sequence.removeAt(oldIndex);
-                  final duration = _durations.removeAt(oldIndex);
-                  _sequence.insert(newIndex, item);
-                  _durations.insert(newIndex, duration);
-                });
-              },
-              onDurationChanged: (index, newDuration) {
-                setDialogState(() {
-                  _durations[index] = newDuration;
-                });
-              },
-              onRemoveItem: (index) {
-                setDialogState(() {
-                  _sequence.removeAt(index);
-                  _durations.removeAt(index);
-                });
-              },
-            );
+        return SequenceDialog(
+          sequence: playerService.sequence,
+          durations: playerService.durations,
+          isPlaying: playerService.isPlaying,
+          currentPlayingIndex: playerService.currentPlayingIndex,
+          onClearSequence: _clearSequence,
+          onReorder: (oldIndex, newIndex) {
+            playerService.reorderSequence(oldIndex, newIndex);
+          },
+          onDurationChanged: (index, newDuration) {
+            playerService.updateDuration(index, newDuration);
+          },
+          onRemoveItem: (index) {
+            playerService.removeSequenceItem(index);
           },
         );
       },
     );
-    setState(() {});
   }
 
   void _savePlaylist() {
-    if (_isPlaying || _sequence.isEmpty) {
-      if (_sequence.isEmpty) {
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
+    if (playerService.isPlaying || playerService.sequence.isEmpty) {
+      if (playerService.sequence.isEmpty) {
         showTopSnackBar(
           context,
-          '播放列表為空，無法儲存',
+          '動作列表為空，無法儲存',
           backgroundColor: Colors.orange,
           icon: Icons.warning_amber_rounded,
         );
@@ -261,61 +160,51 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
       context: context,
       builder:
           (context) => SavePlaylistDialog(
-            currentPlaylistId: _currentPlaylistId,
-            currentPlaylistName: _currentPlaylistName,
-            sequence: _sequence,
-            durations: _durations,
+            currentPlaylistId: playerService.currentPlaylistId,
+            currentPlaylistName: playerService.currentPlaylistName,
+            sequence: playerService.sequence,
+            durations: playerService.durations,
             onSaveComplete: (id, name) {
-              setState(() {
-                _currentPlaylistId = id;
-                _currentPlaylistName = name;
-              });
+              playerService.setPlaylistInfo(id, name);
+              // 不要重新載入播放列表，只更新播放列表信息
+              // 這樣可以避免播放列表自動切換的問題
             },
           ),
     );
   }
 
   void _loadPlaylist(MotionPlaylist playlist) {
-    if (_isPlaying) return; // 播放中不允許載入
-
-    final storageService = Provider.of<MotionStorageService>(
+    final playerService = Provider.of<PlaylistPlayerService>(
       context,
       listen: false,
     );
-    setState(() {
-      _sequence.clear();
-      _durations.clear();
-      _currentPlaylistId = playlist.id;
-      _currentPlaylistName = playlist.name;
-      for (final item in playlist.items) {
-        final template = storageService.getTemplateById(item.templateId);
-        if (template != null) {
-          _sequence.add(template);
-          _durations.add(item.duration);
-        }
-      }
-    });
+    if (playerService.isPlaying) return; // 播放中不允許載入
+
+    playerService.loadPlaylist(playlist);
     showTopSnackBar(
       context,
-      '已載入播放列表 "${playlist.name}"',
+      '已載入動作列表 "${playlist.name}"',
       backgroundColor: AppColors.blueButton(context), // 使用統一的藍色
       icon: Icons.playlist_play,
     );
   }
 
   void _newPlaylist() {
-    if (_isPlaying) return; // 播放中不允許新增
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
+    if (playerService.isPlaying) return; // 播放中不允許新增
 
-    setState(() {
-      _sequence.clear();
-      _durations.clear();
-      _currentPlaylistId = null;
-      _currentPlaylistName = '未命名播放列表';
-    });
+    playerService.newPlaylist();
   }
 
   void _showPlaylistMenu() {
-    if (_isPlaying) return;
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
+    if (playerService.isPlaying) return;
 
     showModalBottomSheet(
       context: context,
@@ -331,7 +220,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
               _newPlaylist();
               showTopSnackBar(
                 context,
-                '已開啟新的播放列表',
+                '已開啟新的動作列表',
                 icon: Icons.add_circle,
                 backgroundColor: AppColors.blueButton(context),
               );
@@ -378,18 +267,23 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
       context,
       listen: false,
     );
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
     _showDeleteConfirmationDialog(
       '確認刪除',
       '確定要刪除動作 "${template.name}" 嗎？',
       () async {
         try {
           await storageService.deleteTemplate(template.id);
-          setState(() {
-            _sequence.removeWhere((t) => t.id == template.id);
-            _durations.removeWhere(
-              (d) => _sequence.indexWhere((t) => t.id == template.id) == -1,
-            );
-          });
+          // Also remove from the sequence in the player service
+          final index = playerService.sequence.indexWhere(
+            (t) => t.id == template.id,
+          );
+          if (index != -1) {
+            playerService.removeSequenceItem(index);
+          }
           showTopSnackBar(context, '動作 "${template.name}" 已刪除');
         } catch (e) {
           showTopSnackBar(
@@ -404,7 +298,11 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
   }
 
   void _showActionsForTemplate(GlobalKey key, MotionTemplate template) {
-    if (_isPlaying) return; // 播放中不允許顯示動作選項
+    final playerService = Provider.of<PlaylistPlayerService>(
+      context,
+      listen: false,
+    );
+    if (playerService.isPlaying) return; // 播放中不允許顯示動作選項
 
     final RenderBox? stackRenderBox =
         _stackKey.currentContext?.findRenderObject() as RenderBox?;
@@ -448,6 +346,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
   Widget build(BuildContext context) {
     super.build(context);
     final btService = Provider.of<BluetoothService>(context);
+    final playerService = Provider.of<PlaylistPlayerService>(context);
     final isConnected = btService.connected;
 
     Provider.of<MotionStorageService>(context);
@@ -459,22 +358,28 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              MotionLibrarySection(
-                onAddToSequence: _addToSequence,
-                onEditTemplate: _isPlaying ? null : widget.onEditTemplate,
-                onShowActions: _showActionsForTemplate,
+              AbsorbPointer(
+                absorbing: playerService.isPlaying,
+                child: MotionLibrarySection(
+                  onAddToSequence: _addToSequence,
+                  onEditTemplate:
+                      playerService.isPlaying ? null : widget.onEditTemplate,
+                  onShowActions: _showActionsForTemplate,
+                  isPlaying: playerService.isPlaying,
+                ),
               ),
               const SizedBox(height: 16),
               PlaylistControlsCard(
-                currentPlaylistName: _currentPlaylistName,
-                sequenceLength: _sequence.length,
-                isPlaying: _isPlaying,
+                currentPlaylistName: playerService.currentPlaylistName,
+                sequenceLength: playerService.sequence.length,
+                isPlaying: playerService.isPlaying,
                 isConnected: isConnected,
-                currentPlayingIndex: _currentPlayingIndex,
+                currentPlayingIndex: playerService.currentPlayingIndex,
                 onExecuteSequence: _executeSequence,
                 onShowPlaylistMenu: _showPlaylistMenu,
                 onShowSequenceDialog: _showSequenceDialog,
                 onSavePlaylist: _savePlaylist,
+                onStopSequence: () => playerService.stopPlaying(),
               ),
             ],
           ),

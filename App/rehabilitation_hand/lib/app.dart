@@ -6,6 +6,7 @@ import 'services/auth_service.dart';
 import 'services/bluetooth_service.dart';
 import 'services/motion_storage_service.dart';
 import 'services/language_service.dart';
+import 'services/playlist_player_service.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/login/login_screen.dart';
 
@@ -21,6 +22,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BluetoothService()),
         ChangeNotifierProvider(create: (_) => MotionStorageService()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
+        ChangeNotifierProxyProvider2<
+          BluetoothService,
+          MotionStorageService,
+          PlaylistPlayerService
+        >(
+          create:
+              (context) => PlaylistPlayerService(
+                Provider.of<BluetoothService>(context, listen: false),
+                Provider.of<MotionStorageService>(context, listen: false),
+              ),
+          update: (context, bluetoothService, motionStorageService, previous) {
+            return previous ??
+                PlaylistPlayerService(bluetoothService, motionStorageService);
+          },
+        ),
       ],
       child: Consumer<ThemeService>(
         builder: (context, themeService, _) {

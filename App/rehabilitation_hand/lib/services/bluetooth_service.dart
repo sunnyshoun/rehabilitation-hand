@@ -10,7 +10,6 @@ class BluetoothService extends ChangeNotifier {
   List<BluetoothDeviceModel> _devices = [];
   bool _scanning = false;
   String _receivedData = '';
-
   bool get connected => _connected;
   List<BluetoothDeviceModel> get devices => _devices;
   bool get scanning => _scanning;
