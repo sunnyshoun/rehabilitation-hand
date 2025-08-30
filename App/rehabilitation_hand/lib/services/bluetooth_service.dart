@@ -30,7 +30,7 @@ class BluetoothService extends ChangeNotifier {
     // 監聽接收的數據
     _spp.dataStream.listen((data) {
       _receivedData = String.fromCharCodes(data);
-      print('Received: $_receivedData');
+      if (kDebugMode) debugPrint('[BluetoothService] Received: $_receivedData');
       notifyListeners();
     });
 
@@ -71,7 +71,7 @@ class BluetoothService extends ChangeNotifier {
     try {
       _devices = await _spp.getPairedDevices();
     } catch (e) {
-      print('Scan error: $e');
+      if (kDebugMode) debugPrint('[BluetoothService] Scan error: $e');
       _devices = [];
     }
 
@@ -89,7 +89,7 @@ class BluetoothService extends ChangeNotifier {
 
       return _connected;
     } catch (e) {
-      print('Connection error: $e');
+      if (kDebugMode) debugPrint('[BluetoothService] Connection error: $e');
       return false;
     }
   }
@@ -118,9 +118,9 @@ class BluetoothService extends ChangeNotifier {
     if (_connected) {
       try {
         await _spp.sendText(command);
-        print('Sent: $command');
+        if (kDebugMode) debugPrint('[BluetoothService] Sent: $command');
       } catch (e) {
-        print('Send error: $e');
+        if (kDebugMode) debugPrint('[BluetoothService] Send error: $e');
       }
     }
   }
@@ -130,7 +130,7 @@ class BluetoothService extends ChangeNotifier {
       try {
         await _spp.sendData(data);
       } catch (e) {
-        print('Send data error: $e');
+        if (kDebugMode) debugPrint('[BluetoothService] Send data error: $e');
       }
     }
   }

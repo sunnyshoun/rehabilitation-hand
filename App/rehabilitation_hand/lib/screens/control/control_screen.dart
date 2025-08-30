@@ -42,10 +42,10 @@ class _ControlScreenState extends State<ControlScreen>
     }
 
     final isEnabled = await btService.isBluetoothEnabled();
-    if (!isEnabled) return;
+    if (!mounted || !isEnabled) return;
 
     final hasPermissions = await btService.checkPermissions();
-    if (!hasPermissions) return;
+    if (!mounted || !hasPermissions) return;
 
     await btService.tryReconnectLastDevice();
   }

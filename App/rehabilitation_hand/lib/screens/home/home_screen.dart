@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final btService = Provider.of<BluetoothService>(context, listen: false);
 
     final isEnabled = await btService.isBluetoothEnabled();
+    if (!mounted) return; // Guard after async call
     if (!isEnabled) {
       final shouldEnable = await showDialog<bool>(
         context: context,
@@ -56,29 +57,31 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
       );
 
+      if (!mounted) return; // Guard after dialog
       if (shouldEnable == true) {
         await btService.enableBluetooth();
         await Future.delayed(const Duration(seconds: 2));
+        if (!mounted) return; // Guard after async operations
       } else {
         return;
       }
     }
 
     final hasPermissions = await btService.checkPermissions();
-    if (!hasPermissions && mounted) {
+    if (!mounted) return; // Guard after async call
+    if (!hasPermissions) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('需要藍牙權限才能連接設備')));
       return;
     }
 
-    if (mounted) {
-      await showDialog<bool>(
-        context: context,
-        barrierDismissible: true,
-        builder: (context) => const BluetoothConnectionDialog(),
-      );
-    }
+    if (!mounted) return; // Guard before final dialog
+    await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => const BluetoothConnectionDialog(),
+    );
   }
 
   void _showDisconnectDialog() {

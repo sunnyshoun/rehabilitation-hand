@@ -27,7 +27,6 @@ class CustomMotionTab extends StatefulWidget {
 
 class _CustomMotionTabState extends State<CustomMotionTab> {
   List<FingerState> _fingerStates = List.filled(5, FingerState.relaxed);
-  String _motionName = '';
   bool _isEditing = false;
   MotionTemplate? _editingTemplate;
 
@@ -62,7 +61,6 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
       setState(() {
         _isEditing = true;
         _editingTemplate = template;
-        _motionName = template.name;
         final position = template.positions.first;
         _fingerStates = [
           position.thumb,
@@ -78,7 +76,6 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
   void _resetToDefault() {
     setState(() {
       _fingerStates = List.filled(5, FingerState.relaxed);
-      _motionName = '';
       _isEditing = false;
       _editingTemplate = null;
     });
@@ -147,7 +144,7 @@ class _CustomMotionTabState extends State<CustomMotionTab> {
                       AppConstants.borderRadius,
                     ),
                     border: Border.all(
-                      color: AppColors.infoText(context).withOpacity(0.5),
+                      color: AppColors.infoText(context).withValues(alpha: 0.5),
                     ),
                   ),
                   child: Row(

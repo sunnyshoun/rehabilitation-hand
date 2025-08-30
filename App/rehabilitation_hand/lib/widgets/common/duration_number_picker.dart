@@ -93,8 +93,14 @@ class _DurationNumberPickerState extends State<DurationNumberPicker> {
               height: _itemExtent,
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: primary.withOpacity(.3), width: 2),
-                  bottom: BorderSide(color: primary.withOpacity(.3), width: 2),
+                  top: BorderSide(
+                    color: primary.withValues(alpha: .3),
+                    width: 2,
+                  ),
+                  bottom: BorderSide(
+                    color: primary.withValues(alpha: .3),
+                    width: 2,
+                  ),
                 ),
               ),
             ),
@@ -135,8 +141,7 @@ class _DurationNumberPickerState extends State<DurationNumberPicker> {
 
 /// 自訂物理：延長慣性、最後仍吸附最近 item。
 class _SmoothSnapScrollPhysics extends FixedExtentScrollPhysics {
-  const _SmoothSnapScrollPhysics({ScrollPhysics? parent})
-    : super(parent: parent);
+  const _SmoothSnapScrollPhysics({super.parent});
 
   @override
   _SmoothSnapScrollPhysics applyTo(ScrollPhysics? ancestor) =>
@@ -149,10 +154,12 @@ class _SmoothSnapScrollPhysics extends FixedExtentScrollPhysics {
     ScrollMetrics position,
     double velocity,
   ) {
-    if (position is! FixedExtentMetrics)
+    if (position is! FixedExtentMetrics) {
       return super.createBallisticSimulation(position, velocity);
-    if (velocity.abs() < tolerance.velocity)
+    }
+    if (velocity.abs() < toleranceFor(position).velocity) {
       return super.createBallisticSimulation(position, velocity);
+    }
     final metrics = position;
     // 某些 Flutter 版本 FixedExtentMetrics 未公開 itemExtent，改用我們自訂的固定高度
     const itemExtent = _DurationNumberPickerState._itemExtent;
@@ -174,7 +181,7 @@ class _SmoothSnapScrollPhysics extends FixedExtentScrollPhysics {
       metrics.pixels,
       targetPixels,
       velocity,
-      tolerance: tolerance,
+      tolerance: toleranceFor(position),
     );
   }
 }

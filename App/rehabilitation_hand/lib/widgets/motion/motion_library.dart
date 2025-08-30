@@ -138,6 +138,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
                                     oldIndex,
                                     newIndex,
                                   );
+                                  if (!mounted) return;
                                 },
                       ),
                       const SizedBox(height: 16),
@@ -174,6 +175,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
                                       oldIndex,
                                       newIndex,
                                     );
+                                    if (!mounted) return;
                                   },
                         ),
                     ],
@@ -261,6 +263,7 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
         try {
           await onReorder(oldIndex, newIndex);
         } catch (e) {
+          if (!mounted) return;
           showTopSnackBar(
             context,
             '順序儲存失敗: $e',
@@ -276,10 +279,12 @@ class _MotionLibrarySectionState extends State<MotionLibrarySection> {
         final Color dragHighlightColor =
             isCustomTemplate
                 ? (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.purple.shade700.withOpacity(0.8) // 使用 700 系列顏色
+                    ? Colors.purple.shade700.withValues(
+                      alpha: 0.8,
+                    ) // 使用 700 系列顏色
                     : Colors.purple.shade100)
                 : (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.blue.shade700.withOpacity(0.8) // 使用 700 系列顏色
+                    ? Colors.blue.shade700.withValues(alpha: 0.8) // 使用 700 系列顏色
                     : Colors.blue.shade100);
 
         return Material(
@@ -369,19 +374,19 @@ class _TemplateCardState extends State<TemplateCard>
     final Color splashColor =
         widget.isCustom
             ? (Theme.of(context).brightness == Brightness.dark
-                ? Colors.purple.shade600.withOpacity(0.5) // 使用稍深的顏色作為水波紋
+                ? Colors.purple.shade600.withValues(alpha: 0.5) // 使用稍深的顏色作為水波紋
                 : Colors.purple.shade100)
             : (Theme.of(context).brightness == Brightness.dark
-                ? Colors.blue.shade600.withOpacity(0.5) // 使用稍深的顏色作為水波紋
+                ? Colors.blue.shade600.withValues(alpha: 0.5) // 使用稍深的顏色作為水波紋
                 : Colors.blue.shade100);
 
     final Color highlightColor =
         widget.isCustom
             ? (Theme.of(context).brightness == Brightness.dark
-                ? Colors.purple.shade600.withOpacity(0.3) // 使用稍深的顏色作為高亮
+                ? Colors.purple.shade600.withValues(alpha: 0.3) // 使用稍深的顏色作為高亮
                 : Colors.purple.shade100.withAlpha(150))
             : (Theme.of(context).brightness == Brightness.dark
-                ? Colors.blue.shade600.withOpacity(0.3) // 使用稍深的顏色作為高亮
+                ? Colors.blue.shade600.withValues(alpha: 0.3) // 使用稍深的顏色作為高亮
                 : Colors.blue.shade100.withAlpha(150));
 
     return Card(

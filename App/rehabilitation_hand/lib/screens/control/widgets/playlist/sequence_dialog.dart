@@ -5,6 +5,7 @@ import 'package:rehabilitation_hand/config/themes.dart';
 import 'package:rehabilitation_hand/models/motion_model.dart';
 import 'package:rehabilitation_hand/services/playlist_player_service.dart';
 import 'package:rehabilitation_hand/widgets/common/common_button.dart';
+import 'package:rehabilitation_hand/widgets/common/top_snackbar.dart';
 
 class SequenceDialog extends StatelessWidget {
   final List<MotionTemplate> sequence;
@@ -192,7 +193,7 @@ class SequenceDialog extends StatelessWidget {
           color:
               isCurrentPlaying
                   ? (Theme.of(context).brightness == Brightness.dark
-                      ? Colors.green.shade700.withOpacity(0.6)
+                      ? Colors.green.shade700.withValues(alpha: 0.6)
                       : Colors.green.shade100)
                   : AppColors.section(context),
           margin: const EdgeInsets.symmetric(vertical: 4),
@@ -268,7 +269,19 @@ class SequenceDialog extends StatelessWidget {
           ),
         );
       },
-      onReorder: onReorder,
+      onReorder: (oldIndex, newIndex) async {
+        try {
+          await onReorder(oldIndex, newIndex);
+        } catch (e) {
+          if (!context.mounted) return;
+          showTopSnackBar(
+            context,
+            '順序儲存失敗: $e',
+            backgroundColor: Colors.red,
+            icon: Icons.error,
+          );
+        }
+      },
     );
   }
 
@@ -299,7 +312,7 @@ class SequenceDialog extends StatelessWidget {
     final bgColor = isEnabled ? enabledBg : disabledBg;
     final textColor = isEnabled ? enabledText : disabledText;
     final borderColor =
-        isEnabled ? Colors.grey.withOpacity(0.5) : disabledBorder;
+        isEnabled ? Colors.grey.withValues(alpha: 0.5) : disabledBorder;
 
     return Row(
       mainAxisSize: MainAxisSize.min,

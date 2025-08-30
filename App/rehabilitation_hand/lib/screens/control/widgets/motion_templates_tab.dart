@@ -277,6 +277,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
       () async {
         try {
           await storageService.deleteTemplate(template.id);
+          if (!mounted) return; // Guard context usage after async gap
           // Also remove from the sequence in the player service
           final index = playerService.sequence.indexWhere(
             (t) => t.id == template.id,
@@ -286,6 +287,7 @@ class _MotionTemplatesTabState extends State<MotionTemplatesTab>
           }
           showTopSnackBar(context, '動作 "${template.name}" 已刪除');
         } catch (e) {
+          if (!mounted) return; // Guard context usage after async gap
           showTopSnackBar(
             context,
             '刪除失敗: $e',

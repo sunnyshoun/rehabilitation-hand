@@ -59,18 +59,17 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
           ),
     );
 
-    if (!mounted) return; // 使用 context 前檢查
+    if (!mounted) return; // guard after dialog
     if (confirm == true) {
       try {
         await storageService.deletePlaylist(playlist.id);
-        if (!mounted) return;
+        if (!mounted) return; // guard before UI updates
         showTopSnackBar(context, '動作列表 "${playlist.name}" 已刪除');
-        if (!mounted) return;
         setState(() {
           _playlists.removeWhere((p) => p.id == playlist.id);
         });
       } catch (e) {
-        if (!mounted) return;
+        if (!mounted) return; // guard before snackbar
         showTopSnackBar(
           context,
           '刪除失敗: $e',
@@ -199,19 +198,6 @@ class _PlaylistMenuSheetState extends State<PlaylistMenuSheet> {
                               final item = _playlists.removeAt(oldIndex);
                               _playlists.insert(newIndex, item);
                             });
-                            try {
-                              await storageService.saveAllPlaylists(_playlists);
-                              if (!mounted) return;
-                              showTopSnackBar(context, '動作列表順序已更新');
-                            } catch (e) {
-                              if (!mounted) return;
-                              showTopSnackBar(
-                                context,
-                                '順序儲存失敗: $e',
-                                backgroundColor: Colors.red,
-                                icon: Icons.error,
-                              );
-                            }
                           },
                         ),
               ),

@@ -93,7 +93,7 @@ class _PlaylistPlayerBarState extends State<PlaylistPlayerBar> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -125,7 +125,7 @@ class _PlaylistPlayerBarState extends State<PlaylistPlayerBar> {
                     width: 42,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.4),
+                      color: Colors.grey.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),

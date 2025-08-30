@@ -7,7 +7,8 @@ class BluetoothConnectionDialog extends StatefulWidget {
   const BluetoothConnectionDialog({super.key});
 
   @override
-  State<BluetoothConnectionDialog> createState() => _BluetoothConnectionDialogState();
+  State<BluetoothConnectionDialog> createState() =>
+      _BluetoothConnectionDialogState();
 }
 
 class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
@@ -23,14 +24,15 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
 
   Future<void> _initializeAndConnect() async {
     final btService = Provider.of<BluetoothService>(context, listen: false);
-    
+
     // 檢查權限
     setState(() {
       _statusMessage = '正在檢查權限...';
     });
-    
+
     final hasPermissions = await btService.checkPermissions();
-    if (!hasPermissions && mounted) {
+    if (!mounted) return; // Guard after async call
+    if (!hasPermissions) {
       setState(() {
         _statusMessage = '藍牙權限被拒絕';
       });
@@ -46,7 +48,8 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
       });
 
       final reconnected = await btService.tryReconnectLastDevice();
-      if (reconnected && mounted) {
+      if (!mounted) return; // Guard after async call
+      if (reconnected) {
         Navigator.of(context).pop(true);
         return;
       }
@@ -56,20 +59,19 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
     setState(() {
       _statusMessage = '正在掃描已配對的設備...';
     });
-    
+
     await btService.scanDevices();
-    
+
+    if (!mounted) return; // Guard after async call
     setState(() {
       _isConnecting = false;
-      _statusMessage = btService.devices.isEmpty 
-        ? '未找到已配對的設備' 
-        : '請選擇要連接的設備';
+      _statusMessage = btService.devices.isEmpty ? '未找到已配對的設備' : '請選擇要連接的設備';
     });
   }
 
   Future<void> _connect(BluetoothDeviceModel device) async {
     final btService = Provider.of<BluetoothService>(context, listen: false);
-    
+
     setState(() {
       _isConnecting = true;
       _connectingDevice = device;
@@ -77,8 +79,9 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
     });
 
     final success = await btService.connectToDevice(device.address);
-    
-    if (success && mounted) {
+
+    if (!mounted) return; // Guard after async call
+    if (success) {
       Navigator.of(context).pop(true);
     } else {
       setState(() {
@@ -86,28 +89,25 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
         _connectingDevice = null;
         _statusMessage = '連接失敗，請重試';
       });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('無法連接到 ${device.displayName}')),
-        );
-      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('無法連接到 ${device.displayName}')));
     }
   }
 
   Future<void> _rescan() async {
     final btService = Provider.of<BluetoothService>(context, listen: false);
-    
+
     setState(() {
       _statusMessage = '正在重新掃描...';
     });
-    
+
     await btService.scanDevices();
-    
+
+    if (!mounted) return; // Guard after async call
     setState(() {
-      _statusMessage = btService.devices.isEmpty 
-        ? '未找到已配對的設備' 
-        : '請選擇要連接的設備';
+      _statusMessage = btService.devices.isEmpty ? '未找到已配對的設備' : '請選擇要連接的設備';
     });
   }
 
@@ -115,7 +115,8 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
   Widget build(BuildContext context) {
     final btService = Provider.of<BluetoothService>(context);
     final screenSize = MediaQuery.of(context).size;
-    final dialogWidth = screenSize.width > 600 ? 550.0 : screenSize.width * 0.95;
+    final dialogWidth =
+        screenSize.width > 600 ? 550.0 : screenSize.width * 0.95;
 
     return AlertDialog(
       title: Row(
@@ -162,11 +163,7 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
             ),
             const SizedBox(height: 16),
             if (btService.scanning)
-              const Expanded(
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              )
+              const Expanded(child: Center(child: CircularProgressIndicator()))
             else if (btService.devices.isEmpty)
               Expanded(
                 child: Center(
@@ -205,14 +202,16 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
                   itemBuilder: (context, index) {
                     final device = btService.devices[index];
                     final isConnecting = _connectingDevice == device;
-                    
+
                     return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 4,
+                      ),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: device.bonded 
-                            ? Colors.blue 
-                            : Colors.grey,
+                          backgroundColor:
+                              device.bonded ? Colors.blue : Colors.grey,
                           child: const Icon(
                             Icons.bluetooth,
                             color: Colors.white,
@@ -240,13 +239,16 @@ class _BluetoothConnectionDialogState extends State<BluetoothConnectionDialog> {
                               ),
                           ],
                         ),
-                        trailing: isConnecting 
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.arrow_forward_ios, size: 16),
+                        trailing:
+                            isConnecting
+                                ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Icon(Icons.arrow_forward_ios, size: 16),
                         onTap: _isConnecting ? null : () => _connect(device),
                         enabled: !_isConnecting,
                       ),

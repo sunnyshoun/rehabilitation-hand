@@ -66,7 +66,7 @@ class SettingsScreen extends StatelessWidget {
                           selected: isSelected,
                           selectedTileColor: Theme.of(
                             context,
-                          ).primaryColor.withOpacity(0.1),
+                          ).primaryColor.withValues(alpha: 0.1),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -149,7 +149,7 @@ class SettingsScreen extends StatelessWidget {
                           selected: isSelected,
                           selectedTileColor: Theme.of(
                             context,
-                          ).primaryColor.withOpacity(0.1),
+                          ).primaryColor.withValues(alpha: 0.1),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -330,6 +330,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                 );
 
+                if (!context.mounted) return; // Guard after dialog
                 if (confirm == true) {
                   auth.logout();
                 }

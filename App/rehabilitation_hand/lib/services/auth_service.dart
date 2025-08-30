@@ -33,13 +33,7 @@ class AuthService extends ChangeNotifier {
 
   Future<bool> login(String username, String password) async {
     try {
-      // TODO: 實際API呼叫
-      // final response = await ApiClient.post('/auth/login', {
-      //   'username': username,
-      //   'password': password,
-      // });
-
-      // 模擬登入成功
+      // 模擬登入成功 (未接後端)
       await Future.delayed(const Duration(seconds: 1));
 
       _currentUser = User(
@@ -60,7 +54,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      print('Login error: $e');
+      if (kDebugMode) debugPrint('[AuthService] Login error: $e');
       return false;
     }
   }
